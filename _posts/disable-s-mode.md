@@ -11,8 +11,10 @@ tags: [s mode,windows,registry]
 Boot into recovery mode and load hive at
 c:\windows\system32\config\SYSTEM
 
+```
 [HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\CI\Policy]
 "SkuPolicyRequired"=dword:00000000
 
 "SkuPolicyRequired"=dword:00000000 <--disabled
 "SkuPolicyRequired"=dword:00000001 <--enabled
+```
