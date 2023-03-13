@@ -1,12 +1,12 @@
 ---
 title: Disable Windows S Mode
-date: 2023-03-13 12:29 -600 
+date: 2023-03-13 00:00 -600 
 categories: [Windows, Registry]
 tags: [s mode,windows,registry] 
 ---
 
 
-## Disable Windows S Mode Through Windows Recovery.
+## Disable Windows S Mode Through Windows Recovery
 
 Boot into recovery mode and load hive at
 c:\windows\system32\config\SYSTEM
@@ -17,4 +17,3 @@ c:\windows\system32\config\SYSTEM
 
 "SkuPolicyRequired"=dword:00000000 <--disabled
 "SkuPolicyRequired"=dword:00000001 <--enabled
-```
