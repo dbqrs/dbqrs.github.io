@@ -1,4 +1,5 @@
 ---
+author: rs
 title: Disable Windows S Mode
 date: 2023-03-11 01:00:00 -0500 
 categories: [Windows, Registry]
