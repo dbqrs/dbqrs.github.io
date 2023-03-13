@@ -1,6 +1,6 @@
 ---
 title: Disable Windows S Mode
-date: 2023-03-13 00:00 -600 
+date: 2023-03-11 01:00:00 -0500 
 categories: [Windows, Registry]
 tags: [s mode,windows,registry] 
 ---
@@ -17,3 +17,4 @@ c:\windows\system32\config\SYSTEM
 
 "SkuPolicyRequired"=dword:00000000 <--disabled
 "SkuPolicyRequired"=dword:00000001 <--enabled
+```
