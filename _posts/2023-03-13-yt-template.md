@@ -19,7 +19,7 @@ tags: [youtube,template]
 <iframe 
 width="700" 
 height="540" 
-src="https://www.youtube.com/embed/dGEjbJkxFhs" 
+src="https://www.youtube.com/embed/o1tj2zJ2Wvg" 
 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; web-share" 
 allowfullscreen
 >
@@ -30,7 +30,7 @@ allowfullscreen
 <iframe 
 width="700" 
 height="540" 
-src="https://www.youtube.com/embed/dGEjbJkxFhs" 
+src="https://www.youtube.com/embed/o1tj2zJ2Wvg" 
 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; web-share" 
 allowfullscreen
 >
