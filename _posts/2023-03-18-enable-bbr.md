@@ -31,7 +31,7 @@ Reload sysctl config
 sudo sysctl -p
 ```
 
-Output should be  
+Output should be:  
 net.core.default_qdisc = fq  
 net.ipv4.tcp_congestion_control = bbr  
 net.ipv4.tcp_window_scaling = 1
