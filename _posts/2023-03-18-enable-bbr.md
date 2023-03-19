@@ -1,9 +1,9 @@
 ---
 author: rs
 title: Enable BBR Congestion Control
-date: 2023-03-03 01:00:00 -0500 
+date: 2023-03-18 01:00:00 -0500 
 categories: [linux, network]
-tags: [linx,network,bbr] 
+tags: [linux,network,bbr] 
 ---
 
 
