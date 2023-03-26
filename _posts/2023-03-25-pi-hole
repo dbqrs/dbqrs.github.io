@@ -1,0 +1,16 @@
+---
+author: rs
+title: Pi-hole notes
+date: 2023-03-25 01:00:00 -0500 
+categories: [linux, network, dns]
+tags: [linux,network,dns] 
+---
+
+## Pi-hole Notes
+- Pi-hole is setup as a recursive dns server
+- installed unattended-updates to automatically install security updates
+- Using Linux Mint which is an unsupported OS
+- Updating Pi-hole installation needs to be done with the following command
+```bash
+PIHOLE_SKIP_OS_CHECK=true sudo -E pihole -up
+``` 
