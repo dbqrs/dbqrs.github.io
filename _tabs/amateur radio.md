@@ -5,5 +5,5 @@ order: 4
 ---
 
 
-[KM4ACK Comms Plan Template](dbqrs.github.io/files/ar/comms-plan-template.zip)
+[KM4ACK Comms Plan Template](files/ar/comms-plan-template.zip)
 
