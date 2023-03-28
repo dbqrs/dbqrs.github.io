@@ -1,1 +1,1 @@
-## Visit the page [here!](https://www.dbqrs.com)
+## Visit the website [here!](https://www.dbqrs.com)
