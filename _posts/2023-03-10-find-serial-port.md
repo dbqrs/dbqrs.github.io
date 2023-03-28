@@ -1,6 +1,6 @@
 ---
 author: rs
-title: USB Serial Cable Notes
+title: USB to Serial Cable Notes
 date: 2023-03-10 01:00:00 -0500 
 categories: [Linux]
 tags: [linux,usb,serial,console] 
