@@ -6,17 +6,17 @@ categories: [Radio]
 tags: [radio,yaesu,ft891,cat control] 
 ---
 
-https://www.reddit.com/r/amateurradio/comments/druz6g/cat_control_yaesu_ft891_on_linux_machine/  
-
-Linux doesn't really have any drivers and everything is pretty much plug and play. Usually the cat control on most rigs is just plain serial so you should be able to get the serial port of the radio like this: unplug the radio, run ls /dev/tty*, plug in the radio, then wait about 2 seconds, run the command again and write down the new device that pops up. It will probably be something like /dev/ttyAMA0 or /dev/ttyUSB0
+Usually the cat control on most rigs is just plain serial so you should be able to get the serial port of the radio like this: unplug the radio, run ls /dev/tty*, plug in the radio, then wait about 2 seconds, run the command again and write down the new device that pops up. It will probably be something like /dev/ttyAMA0 or /dev/ttyUSB0
 
 If you put the serial port into flrig/fldigi and you get permission denied errors, run:
+
 ```bash
 sudo usermod -a -G dialout username  
 ```
----------------------------------------------------------------------------------------------------
 
-https://groups.io/g/KM4ACK-Pi/topic/rpi4_signalink_ft_891_ptt/83976935?p=  
+[FT-891 and TRX-manager CAT control software](https://www.lb3hc.net/archives/2699)
+
+[RPI4, SignaLink, FT-891 ~ PTT works but no ALC/Power on Transmit](https://groups.io/g/KM4ACK-Pi/topic/rpi4_signalink_ft_891_ptt/83976935?p=)  
 
 I had a lot of trouble with the Singnalink USB and the FT-891, but actually getting power out was not one of them. That said, I've been using FT8, Winlink and all other digital modes quite successfully with that hardware combination and the following radio settings (I did not need to adjust the Data Gain at all, since the Signalink has knobs on the front to adjust TX and RX gain!):  
 
