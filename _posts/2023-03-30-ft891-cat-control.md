@@ -16,7 +16,7 @@ sudo usermod -a -G dialout username
 ```
 ---------------------------------------------------------------------------------------------------
 
-#https://groups.io/g/KM4ACK-Pi/topic/rpi4_signalink_ft_891_ptt/83976935?p=  
+https://groups.io/g/KM4ACK-Pi/topic/rpi4_signalink_ft_891_ptt/83976935?p=  
 
 I had a lot of trouble with the Singnalink USB and the FT-891, but actually getting power out was not one of them. That said, I've been using FT8, Winlink and all other digital modes quite successfully with that hardware combination and the following radio settings (I did not need to adjust the Data Gain at all, since the Signalink has knobs on the front to adjust TX and RX gain!):  
 
