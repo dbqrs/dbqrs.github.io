@@ -6,10 +6,20 @@ categories: [Linux]
 tags: [linux,usb,serial,console] 
 ---
 
-To use USB to serial adapter, add user to dialout group
+To use USB to serial adapter, add user to dialout group  
+*Ubuntu:*
 ```bash
 sudo usermod -aG dialout USERNAME
 ```  
+*Fedora:*
+```bash
+sudo usermod -a -G tty USERNAME
+```
+
+Found this in a random note for Ubuntu:
+```bash
+sudo chmod a+rw /dev/ttyUSB0
+```
 
 find serial ports  
 ```bash
