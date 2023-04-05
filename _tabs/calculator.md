@@ -121,7 +121,7 @@ function calculate() {
             numberOfRadials = 32;
         }
 
-    // Output the results
+    // Output the results 
     document.getElementById("dipole-length").value = dipoleLength.toFixed(3) + " ft";
     document.getElementById("ground-radial-length").value = groundRadialLength.toFixed(3) + " ft";
     document.getElementById("number-of-radials").value = Math.round(numberOfRadials) + " radials";
