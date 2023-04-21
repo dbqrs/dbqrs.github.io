@@ -18,7 +18,7 @@ source .bashrc
 **#clear screen, windows command**  
 alias cls='clear'  
 
-**#put the apt update and upgrade in one command, creates a dated log file**  
+**#apt update and apt upgrade in one command, creates a dated log file**  
 alias update='sudo apt update && sudo apt upgrade -y 2>&1 | tee ~/.loggy/"$(date +%F)-upgrade.log" '
 
 **#runs the typical cleanup commands**   
