@@ -1,7 +1,7 @@
 ---
 author: rs
 title: Reset Admin Pass
-date: 2023-05-09 01:00:00 -0500 
+date: 2023-05-08 01:00:00 -0500 
 categories: [windows]
 tags: [windows, password]
 ---
