@@ -5,7 +5,7 @@ order: 4
 ---
 
 ### **Amateur Radio Software**
-[Win 10 & 11 Programming Cable Drivers](https://github.com/dbqrs/dbqrs.github.io/raw/main/files/ar/PL2303.zip) for the cables with fake Prolific 2303 chips from China. Read the readme.txt for installation instructions. 
+[Win 10 & 11 Programming Cable Drivers](https://www.dbqrs.com/files/ar/PL2303.zip) for the cables with fake Prolific 2303 chips from China. Read the readme.txt for installation instructions. 
 
 ### **Preparedness & Emergency Services**
 [ARES Info, ARRL](http://www.arrl.org/ares)  
