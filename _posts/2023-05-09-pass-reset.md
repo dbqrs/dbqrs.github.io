@@ -12,4 +12,4 @@ copy cmd.exe Utilman.exe
 
 reboot
 
-net user administrator Password123
+net user administrator newpassword
