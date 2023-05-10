@@ -1,11 +1,11 @@
 ---
 author: rs
 title: Enable Registry Backup Win10/11 
-date: 2023-05-09 01:00:00 -0500 
+date: 2023-05-09
 categories: [windows]
 tags: [windows, registry]
 ---
-Windows 10/11 disable system restore points and registry backups. Here is a workaround to re-enable regsitry backups. Enabling system restore is a no-brainer. 
+Windows 10/11 disables system restore points and registry backups. Here is a workaround to re-enable regsitry backups. Enabling system restore is a no-brainer. 
 
 Merge this [registry file](https://www.dbqrs.com/files/posts/regbackup.reg)
 
