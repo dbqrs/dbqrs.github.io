@@ -21,10 +21,10 @@ alias cls='clear'
 **#apt update and apt upgrade in one command, creates a dated log file**  
 alias update='sudo apt update && sudo apt upgrade -y 2>&1 | tee ~/.loggy/"$(date +%F)-upgrade.log" '
 
-**#search apt for packages
+**#search apt for packages**
 alias pksearch='sudo apt search'
 
-**#install packages
+**#install packages**
 alias install='sudo apt install'
 
 **#runs the typical cleanup commands**   
