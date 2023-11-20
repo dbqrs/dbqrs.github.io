@@ -10,6 +10,8 @@ Here are two ways to set the resolution of Ubuntu 22.04, when virtualizing in Hy
 
 **Method 1**
 
+Run this command in PoweShell. **note:**Change Ubuntu to the name of your virtual machine. 
+
 ```powershell
 set-vmvideo Ubuntu -horizontalresolution:1920 -verticalresolution:1080 -resolutiontype single
 ```
