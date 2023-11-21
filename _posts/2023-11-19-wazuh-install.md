@@ -17,3 +17,4 @@ curl -sO https://packages.wazuh.com/4.6/wazuh-install.sh && chmod 744 wazuh-inst
 ```
 
 Nicked from [Krishnendu](https://krishnendu.com/install-wazuh-4-x-on-ubuntu-single-host-with-single-command/)
+Wazuh [Quick Start Guide](https://documentation.wazuh.com/current/quickstart.html)
