@@ -16,5 +16,5 @@ Install Wazuh. note: Check the current version of Wazuh and adjust version in th
 curl -sO https://packages.wazuh.com/4.6/wazuh-install.sh && chmod 744 wazuh-install.sh && bash ./wazuh-install.sh -a
 ```
 
-Nicked from [Krishnendu](https://krishnendu.com/install-wazuh-4-x-on-ubuntu-single-host-with-single-command/)
+Nicked from [Krishnendu](https://krishnendu.com/install-wazuh-4-x-on-ubuntu-single-host-with-single-command/)  
 Wazuh [Quick Start Guide](https://documentation.wazuh.com/current/quickstart.html)
