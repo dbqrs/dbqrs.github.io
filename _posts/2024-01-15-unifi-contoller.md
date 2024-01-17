@@ -9,7 +9,7 @@ image: /images/unifi.png
 
 ### Install LibSSL, MongoDB and OpenJDK
 
-If not already install sudo and add your username to the sudo group.
+If not already installed, install sudo and add your username to the sudo group.
 ```bash
 /sbin/adduser USERNAME sudo
 ```
