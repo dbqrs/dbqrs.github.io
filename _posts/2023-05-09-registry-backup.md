@@ -25,4 +25,4 @@ schtasks /run /i /tn "\Microsoft\Windows\Registry\RegIdleBackup"
 
 Check C:\Windows\System32\config\RegBack for created files
 
-![](https://www.dbqrs.com/images/posts/regbackup.png)
+![RegBackup](https://www.dbqrs.com/images/posts/regbackup.png)

@@ -10,4 +10,4 @@ I developed a habit of using delete instead of moving to trash. I deleted a coup
 In the file manager go to **Edit** --> **Preferences** --> **Behavior** tab and uncheck **Include a Delete command that bypasses Trash**
 
 
-![](https://www.dbqrs.com/images/posts/disable-delete.png)
+![File Management Preferences](https://www.dbqrs.com/images/posts/disable-delete.png)

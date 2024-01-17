@@ -33,7 +33,7 @@ alias cleanup='sudo apt autoremove && sudo apt autoclean && sudo apt clean'
 **#executes neofetch**  
 alias nn='neofetch'
 
-![](/images/neofetch.png)
+![Neofetch](/images/neofetch.png)
 
 **#set to auto resume partially downloaded file**  
 alias wget='wget -c'
