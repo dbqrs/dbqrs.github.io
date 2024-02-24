@@ -1,6 +1,6 @@
 ---
 author: rs
-title: Set Ubunutu 22.04 Resolution in Hyper-V
+title: Set Ubuntu 22.04 Resolution in Hyper-V
 date: 2023-11-19 02:00:00 -0500 
 categories: [virtualization,linux,hyper-v]
 tags: [ubuntu,hyper-v,resolution]
