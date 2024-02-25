@@ -19,15 +19,15 @@ reg.exe  add HKLM\Software\Policies\Microsoft\Windows\Explorer /v DisableSearchB
 ```
 
 ### Disable Some Telemetry
-```test
+```text
 reg.exe add HKLM\Software\Policies\Microsoft\Windows\Explorer /v AllowTelemetry /t REG_DWORD /d 00000000
 ```
 
 Disable **Connected User Experiences and Telemetry Service** is Services or run these PowerShell commands
-```PowerShell
+```powershell
 stop-service diagtrack
 ```
 
-```PowerShell
+```powershell
 set-service diagtrack -startuptype disabled
 ```
