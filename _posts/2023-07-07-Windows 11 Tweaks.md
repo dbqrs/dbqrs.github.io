@@ -20,7 +20,7 @@ reg.exe add HKLM\Software\Policies\Microsoft\Windows\Explorer /v DisableSearchBo
 
 ### Disable Some Telemetry
 ```text
-reg.exe add HKLM\Software\Policies\Microsoft\Windows\Explorer /v AllowTelemetry /t REG_DWORD /d 00000000
+reg.exe add HKLM\Software\Policies\Microsoft\Windows\DataCollection /v AllowTelemetry /t REG_DWORD /d 00000000
 ```
 
 Disable **Connected User Experiences and Telemetry Service** is Services or run these PowerShell commands
