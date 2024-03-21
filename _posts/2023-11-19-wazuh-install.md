@@ -4,7 +4,6 @@ title: Install Wazuh on Ubunutu 22.04
 date: 2023-11-19 02:00:00 -0500 
 categories: [siem]
 tags: [ubuntu,siem,wazuh]
-image: https://wazuh.com/uploads/2016/04/wazuh-standard-featured-picture.png
 ---
 
 

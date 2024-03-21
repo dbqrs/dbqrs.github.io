@@ -4,7 +4,6 @@ title: Install UniFi Controller on Debian 12
 date: 2024-01-13 13:01:00 -0500 
 categories: [debian, unifi]
 tags: [linux, debian, bookworm, unifi]
-image: /images/unifi.png
 ---
 
 ### Install LibSSL, MongoDB and OpenJDK
