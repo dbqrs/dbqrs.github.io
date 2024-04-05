@@ -8,17 +8,17 @@ tags: [windows 11, tweaks, bing, right-click, telemetry]
 
 This may or may not get updated. My DD is Mint, but at work it is Windows 11. These are the things most important to me.
 
-### Restore The Classic Right-Click Menu - cmd as Administrator
+### Restore The Classic Right-Click Menu - cmd as user
 ```text
 reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
 ```
 
-### Disable Bing in the Start Menu
+### Disable Bing in the Start Menu - cmd as Administrator
 ```text
 reg.exe add HKLM\Software\Policies\Microsoft\Windows\Explorer /v DisableSearchBoxSuggestions /t REG_DWORD /d 00000001
 ```
 
-### Disable Some Telemetry
+### Disable Some Telemetry - cmd as Administrator
 ```text
 reg.exe add HKLM\Software\Policies\Microsoft\Windows\DataCollection /v AllowTelemetry /t REG_DWORD /d 00000000
 ```
