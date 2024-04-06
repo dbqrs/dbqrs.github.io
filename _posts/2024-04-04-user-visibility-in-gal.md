@@ -13,4 +13,4 @@ This is going to apply when using AzureAD Connect, now known as Microsoft Entra 
 
 Find **msExchHideFromAddressLists** and set it to TRUE or FALSE depending on your needs. You may also need to look for **showInAddressBook** and delete it if necessary.
 
-![](images/step-0.png)
+![.](images/step-0.png)
