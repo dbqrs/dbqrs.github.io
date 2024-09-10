@@ -1,12 +1,12 @@
 ---
 author: rs
-title: Method of Procedure (MOP)
+title: Change Request Documentation
 date: 2024-09-07 02:00:00 -0500 
 categories: [support]
-tags: [mop, procedure, planning, management]
+tags: [change, procedure, planning, management]
 ---
 
-A **Method of Procedure (MOP)** is a detailed, step-by-step guide used in IT projects to ensure that network, server, or other infrastructure changes are implemented smoothly, with minimal disruption and risk. Below are some key elements and examples of what a good MOP for IT projects should include:
+A **Change Request** is a detailed, step-by-step guide used in IT projects to ensure that network, server, or other infrastructure changes are implemented smoothly, with minimal disruption and risk. Below are some key elements and examples of what a good Change Request for IT projects should include:
 
 ---
 
