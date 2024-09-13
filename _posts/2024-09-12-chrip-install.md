@@ -29,7 +29,7 @@ To resolve this issue:
 
 2. Then I installed the new version of CHIRP:
    ```bash
-   pip install ./chirp-20240911-py3-none-any.whl
+   pip3 install ./chirp-20240911-py3-none-any.whl
    ```
 
 ---
@@ -44,7 +44,7 @@ sudo apt install python3-wxgtk4.0 python3-pip
 ##### **Step 2: Install CHIRP**
 Navigate to the directory where your CHIRP `.whl` package is located and install it with:
 ```bash
-pip install ./chirp-xxxxxxxx-py3-none-any.whl
+pip3 install ./chirp-xxxxxxxx-py3-none-any.whl
 ```
 
 --- 
