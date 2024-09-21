@@ -44,7 +44,7 @@ sudo apt install python3-wxgtk4.0 python3-pip pipx
 ##### **Step 2: Install CHIRP**
 Navigate to the directory where your CHIRP `.whl` package is located and install it with:
 ```bash
-pipx install ./chirp-xxxxxxxx-py3-none-any.whl
+pipx install --system-site-packages ./chirp-xxxxxxxx-py3-none-any.whl
 ```
 
 --- 
