@@ -38,13 +38,13 @@ To resolve this issue:
 
 ##### **Step 1: Install Required Packages**
 ```bash
-sudo apt install python3-wxgtk4.0 python3-pip
+sudo apt install python3-wxgtk4.0 python3-pip pipx
 ```
 
 ##### **Step 2: Install CHIRP**
 Navigate to the directory where your CHIRP `.whl` package is located and install it with:
 ```bash
-pip3 install ./chirp-xxxxxxxx-py3-none-any.whl
+pipx install ./chirp-xxxxxxxx-py3-none-any.whl
 ```
 
 --- 
