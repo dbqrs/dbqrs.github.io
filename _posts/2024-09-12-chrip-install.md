@@ -29,7 +29,7 @@ To resolve this issue:
 
 2. Then I installed the new version of CHIRP:
    ```bash
-   pip3 install ./chirp-20240911-py3-none-any.whl
+   pipx install --system-site-packages ./chirp-xxxxxxxx-py3-none-any.whl
    ```
 
 ---
