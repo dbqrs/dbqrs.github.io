@@ -1,6 +1,6 @@
 ---
 author: rs
-title: Install Omada SDN Controller on Debian 12.7 
+title: Install Omada SDN Controller on Debian 12.8 
 date: 2024-04-12 13:01:00 -0500 
 categories: [linux,debian,omada]
 tags: [linux, debian, omada, bookwork]
@@ -32,10 +32,17 @@ MongoDB 7 requires the following minimum Intel x86_64 microarchitecture:
 ---  
 
 
+### Install Script
 
+**Download and Install omada_setup Script**
+```bash
+wget https://www.dbqrs.com/files/scripts/omada_setup.sh && chmod +x omada_setup.sh && ./omada_setup.sh
+``` 
+---
+## or
 ---
 
-### **Run Commands as Root**
+### **Manually Run Commands as Root**
 - If you have installed sudo or are using an OS such Ubuntu, prefix all commands with sudo.
 
 Ensure the system is up-to-date, and reboot if necessary:
@@ -84,9 +91,3 @@ wget https://static.tp-link.com/upload/software/2024/202411/20241101/Omada_SDN_C
   
 ---
 
-### Install Script
-
-**Download and Install omada_setup Script**
-```bash
-wget https://www.dbqrs.com/files/scripts/omada_setup.sh && chmod +x omada_setup.sh && ./omada_setup.sh
-``` 
