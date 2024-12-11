@@ -15,59 +15,74 @@ to load new edits into bash
 source .bashrc
 ```
 ---
-# executes neofetch
-alias nn='neofetch'
 
-![Neofetch](/images/neofetch.png)
-
-# updates the os and logs the update
-alias update='sudo apt update && sudo apt upgrade -y 2>&1 | tee ~/.loggy/"$(date+%F)-upgrade.log"'
-
-# clear screen, windows command
+##### clear screen, windows command
+```
 alias cls='clear'
+```
 
-# put the apt update and upgrade in one command, creates a dated log file
-alias update='sudo apt update && sudo apt upgrade -y 2>&1 | tee ~/.loggy/"$(date +%F)-upgrade.log" '
+##### put the apt update and upgrade in one command, creates a dated log file
+```
+alias update='sudo apt update && sudo apt upgrade -y 2>&1 | tee ~/.loggy/"$(date +%F-%S)-upgrade.log" '
+```
 
-# search apt for packages
+##### search apt for packages
+```
 alias pksearch='sudo apt search'
-alias pkgs='sudo apt search'
+```
 
-# install packages
-alias ainstall='sudo apt install'
-alias dinstall='sudo dpkg -i'
-
-# typical cleanup commands 
+##### typical cleanup commands 
+```
 alias cleanup='sudo apt autoremove && sudo apt autoclean && sudo apt clean'
+```
 
-# automatically set to resume partially downloaded file
+##### automatically set to resume partially downloaded file
+```
 alias wget='wget -c'
+```
 
-# displays system information and current dns  
+##### executes neofetch
+```
+alias nn='neofetch'
+```
+
+##### displays system information and current dns  
+```
 alias ii='inxi -b -A -i && nmcli dev show | grep 'IP4.DNS' '
+```
 
-# systemctl start
+##### systemctl start
+```
 alias sstart='sudo systemctl start'
-# systemctl stop
+```
+
+##### systemctl stop
+```
 alias sstop='sudo systemctl stop'
-# systemctl restart
+```
+
+##### systemctl restart
+```
 alias srestart='sudo systemctl restart' 
-# systemctl status
+```
+
+##### systemctl status
+```
 alias sstatus='sudo systemctl status'
+```
 
-# ping tester with log file
-# alias pingtest='ping -i 1 -s 1000 8.8.8.8 | while read line; do echo "$(date "+%Y-%m-%d %H:%M:%S") - $line"; done | tee -a "/home/robear/$(date "+%Y-%m-%d")-ping.log"'
+##### ping tester with log file
+```
 alias pingtest='ping -i 1 -s 1472 8.8.8.8 | while read line; do echo "$(date "+%Y-%m-%d %H:%M:%S") - $line"; done | tee -a ~/logs/"$(date "+%F")-ping.log"'
+```
 
-
-
-
-# my local ip address
+##### local ip address
+```
 alias myip="ip -o -4 addr show | awk '{print \$2, \$4}'"
+```
 
-
-# Get Public IP information
-
+##### get your current public ip with command `pubip`
+```
 pubip() {
     # Define the API URL (you can change it if needed)
     local api_url="http://ipinfo.io/json"
@@ -87,3 +102,4 @@ pubip() {
         echo "jq is required but not installed. Install jq and try again."
     fi
 }
+```
