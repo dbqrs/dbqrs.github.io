@@ -3,7 +3,7 @@ author: rs
 title: Windows 11 Tweaks
 date: 2023-07-07 02:00:00 -0500 
 categories: [Windows 11]
-tags: [windows 11, tweaks, bing, right-click, telemetry]
+tags: [windows 11, tweaks, bing, right-click, telemetry, recall, hash]
 ---
 
 This may or may not get updated. My DD is Mint, but at work it is Windows 11. These are the things most important to me.
@@ -113,4 +113,15 @@ Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\*\shell\hash\shell\08menu\command]
 @="powershell -noexit get-filehash -literalpath \\\"%1\\\" -algorithm SHA1 | format-list;get-filehash -literalpath \\\"%1\\\" -algorithm SHA256 | format-list;get-filehash -literalpath \\\"%1\\\" -algorithm SHA384 | format-list;get-filehash -literalpath \\\"%1\\\" -algorithm SHA512 | format-list;get-filehash -literalpath \\\"%1\\\" -algorithm MACTripleDES | format-list;get-filehash -literalpath \\\"%1\\\" -algorithm MD5 | format-list;get-filehash -literalpath \\\"%1\\\" -algorithm RIPEMD160 | format-list"
+```
+
+---
+
+### Windows Recall - Check Status, Disable or Enable.
+
+**Command as Administrator**
+```
+Check Status: Dism /Online /Get-Featureinfo /Featurename:Recall 
+Disable: Dism /Online /Disable-Feature /Featurename:Recall 
+Enable: Dism /Online /Enable-Feature /Featurename:Recall
 ```
