@@ -1,10 +1,12 @@
 ---
 author: rs
-title: Get Uninstall Strings For Software In Programs And Features
+title: Retrieve Uninstall Strings for Installed Software
 date: 2025-1-12 02:00:00 -0500 
 categories: [automation]
 tags: [automation,uninstall]
 ---
+
+### PowerShell Script to Find Uninstall Strings for Installed Software (Excluding Microsoft Store Apps)
 
 ```powershell
 # Define the registry paths
