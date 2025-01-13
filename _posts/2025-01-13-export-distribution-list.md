@@ -1,3 +1,10 @@
+---
+author: rs
+title: Export All Exchange Online Distribution Lists To Excel
+date: 2025-1-13 02:00:00 -0500 
+categories: [exchange]
+tags: [exchange]
+---
 
 ### Export All Exchange Online Distribution Lists To Excel 
 
