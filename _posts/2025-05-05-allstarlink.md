@@ -6,7 +6,7 @@ categories: [radio]
 tags: [radio,voip,ham radio,raspberry pi,pi,node]
 ---
 
-# This is a work in progress and may or may not be updated.
+# This is a work in progress.
 
 
 Copy/Pasta from https://community.allstarlink.org/t/the-5-most-popular-reasons-for-connection-failure/22178
