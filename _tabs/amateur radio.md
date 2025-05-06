@@ -8,7 +8,7 @@ order: 4
 [Win 10 & 11 Programming Cable Drivers](https://www.dbqrs.com/files/ar/PL2303.zip) for the cables with fake Prolific 2303 chips from China. Read the readme.txt for installation instructions. 
 
 ### **Preparedness & Emergency Services**
-[ARES Info, ARRL](http://www.arrl.org/ares)  
+[ARES Info, ARRL](https://www.arrl.org/ares)  
 [Iowa Department of Homeland Security](https://homelandsecurity.iowa.gov/)  
 [FEMA Emergency Managemet](https://www.fema.gov/emergency-managers/national-preparedness)  
 [Ready.gov - Make A Plan](https://www.ready.gov/plan)  
