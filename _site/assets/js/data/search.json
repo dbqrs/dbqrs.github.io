@@ -1,0 +1,854 @@
+[
+  
+  {
+    "title": "Export All Exchange Online Distribution Lists To Excel",
+    "url": "/posts/export-distribution-list/",
+    "categories": "exchange",
+    "tags": "exchange",
+    "date": "2025-01-13 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "Export All Exchange Online Distribution Lists To ExcelThis is based off this post: Exchange Online Quick Tip: Export all distribution lists with members to a CSV file!This is different because it e...",
+    "content": "Export All Exchange Online Distribution Lists To ExcelThis is based off this post: Exchange Online Quick Tip: Export all distribution lists with members to a CSV file!This is different because it exports all distribution lists including their members into separate .csv files, then combines all the .csv files into an Excel spreadsheet. Each tab in the spreadsheet is named after the corresponding distribution list.# Set working directorySet-Location C:\\tempClear-Host# Ensure the required module is installedWrite-Host \"Checking for ExchangeOnlineManagement module...\" -ForegroundColor Greenif (-not (Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {    Write-Host \"Module not found. Installing ExchangeOnlineManagement module...\" -ForegroundColor Yellow    Install-Module -Name ExchangeOnlineManagement -AllowClobber -Force #-Verbose} else {    Write-Host \"ExchangeOnlineManagement module already installed.\" -ForegroundColor Green}# Import the moduleWrite-Host \"Importing ExchangeOnlineManagement module...\" -ForegroundColor GreenImport-Module ExchangeOnlineManagement# Check the installed versionWrite-Host \"Checking installed module version...\" -ForegroundColor GreenGet-InstalledModule -Name ExchangeOnlineManagement# Update the module if neededWrite-Host \"Updating module if necessary...\" -ForegroundColor GreenUpdate-Module -Name ExchangeOnlineManagement #-Verbose# Connect to Exchange OnlineWrite-Host \"Connecting to Exchange Online...\" -ForegroundColor GreenConnect-ExchangeOnline# Create output directory for CSV files$outputDir = \"C:\\temp\"if (-not (Test-Path -Path $outputDir)) {    Write-Host \"Creating output directory: $outputDir\" -ForegroundColor Yellow    New-Item -Path $outputDir -ItemType Directory -Force}# Get all distribution groupsWrite-Host \"Retrieving all distribution groups...\" -ForegroundColor Green$groups = Get-DistributionGroup -ResultSize Unlimited$totalGroups = $groups.Count$i = 1# Process each distribution group and export members to individual CSV filesWrite-Host \"Exporting members of distribution groups to individual CSV files...\" -ForegroundColor Green$groups | ForEach-Object {    $groupName = $_.DisplayName    Write-Progress -Activity \"Processing Distribution Groups\" -Status \"Processing $groupName ($i of $totalGroups)\" -PercentComplete (($i / $totalGroups) * 100)    # Get members of the current distribution group    $members = Get-DistributionGroupMember -Identity $groupName -ResultSize Unlimited |        ForEach-Object {            $recipient = Get-Recipient -Identity $_.PrimarySMTPAddress -ErrorAction SilentlyContinue            [PSCustomObject]@{                DisplayName       = $recipient.DisplayName                PrimarySMTPAddress = $_.PrimarySMTPAddress                RecipientType     = $_.RecipientType            }        }    # Define the sanitized file name    $fileName = \"$outputDir\\$($groupName -replace '[&lt;&gt;:\"/\\|?*]', '')-members.csv\"    # Export members to a CSV file    $members | Export-Csv -Path $fileName -NoTypeInformation -Encoding UTF8    Write-Host \"Exported $groupName to $fileName\" -ForegroundColor Cyan    $i++}# Disconnect from Exchange OnlineDisconnect-ExchangeOnline# Combine CSV files into ExcelWrite-Host \"Combining CSV files into a single Excel file...\" -ForegroundColor Green# Create an Excel application object$excel = New-Object -ComObject Excel.Application$excel.Visible = $false  # Set to $true if you want to see the Excel file as it is created$workbook = $excel.Workbooks.Add()# Get all CSV files in the folder$csvFiles = Get-ChildItem -Path $outputDir -Filter \"*.csv\"# Loop through each CSV file$i = 1$totalFiles = $csvFiles.Countforeach ($csvFile in $csvFiles) {    $groupName = [System.IO.Path]::GetFileNameWithoutExtension($csvFile.Name)    Write-Progress -Activity \"Importing CSV files to Excel\" -Status \"Adding $groupName ($i of $totalFiles)\" -PercentComplete (($i / $totalFiles) * 100)    # Read the CSV file into a PowerShell object    $csvData = Import-Csv -Path $csvFile.FullName    # Add a new worksheet for each CSV file    $sheet = $workbook.Sheets.Add()        # Set the sheet name to the CSV file name without the extension (ensure it's within Excel's name limits)    $sheet.Name = $groupName.Substring(0, [Math]::Min($groupName.Length, 31))    # Write data to the Excel sheet    $rowIndex = 1    $csvData | ForEach-Object {        $columnIndex = 1        foreach ($property in $_.PSObject.Properties) {            # Add headers in the first row            if ($rowIndex -eq 1) {                $sheet.Cells.Item(1, $columnIndex).Value = $property.Name            }            # Write data            $sheet.Cells.Item($rowIndex + 1, $columnIndex).Value = $property.Value            $columnIndex++        }        $rowIndex++    }    $i++}# Save the workbook to a file$excelFilePath = \"C:\\temp\\all_dist_lists.xlsx\"$workbook.SaveAs($excelFilePath)# Close the workbook and Excel$workbook.Close()$excel.Quit()Write-Host \"CSV files have been combined into Excel at $excelFilePath\" -ForegroundColor Green"
+  },
+  
+  {
+    "title": "Retrieve Uninstall Strings for Installed Software",
+    "url": "/posts/uninstall-strings/",
+    "categories": "automation",
+    "tags": "automation, uninstall",
+    "date": "2025-01-12 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "PowerShell Script to Find Uninstall Strings for Installed Software (Excluding Microsoft Store Apps)# Define the registry paths$paths = @(    \"HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninsta...",
+    "content": "PowerShell Script to Find Uninstall Strings for Installed Software (Excluding Microsoft Store Apps)# Define the registry paths$paths = @(    \"HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\",    \"HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\",    \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\")# Create an array to store the results$uninstallInfo = @()# Loop through each registry pathforeach ($path in $paths) {    # Get all subkeys in the path    Get-ChildItem -Path $path -ErrorAction SilentlyContinue | ForEach-Object {        $app = Get-ItemProperty -Path $_.PsPath -ErrorAction SilentlyContinue        # Collect app details        [PSCustomObject]@{            Name           = $app.DisplayName            Publisher      = $app.Publisher            Version        = $app.DisplayVersion            UninstallString = $app.UninstallString        }    } | Where-Object { $_.Name -ne $null } | ForEach-Object {        $uninstallInfo += $_    }}# Create folder if it does not exist$folderPath = \"C:\\shit\"if (-Not (Test-Path -Path $folderPath)) {    New-Item -Path $folderPath -ItemType Directory}# Export to a CSV file without truncation$filePath = \"$folderPath\\UninstallStrings_Full.csv\"$uninstallInfo | Export-Csv -Path $filePath -NoTypeInformation -Encoding UTF8# Export to a text file with detailed formatting #$textFilePath = \"$folderPath\\UninstallStrings_Full.txt\" #$uninstallInfo | ForEach-Object { #    \"Name: $_.Name`nPublisher: $_.Publisher`nVersion: $_.Version`nUninstall String: $_.UninstallString`n`n\" #} | Out-File -FilePath $textFilePath -Encoding UTF8Write-Host \"Exported uninstall details to $filePath\" # and $textFilePath\"pause"
+  },
+  
+  {
+    "title": "Taco Seasoning Recipes",
+    "url": "/posts/tacos/",
+    "categories": "recipes",
+    "tags": "tacos",
+    "date": "2025-01-12 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "Here are eight ways to season tacos.1. Classic Taco SeasoningThis is a traditional seasoning mix that gives tacos a balanced, savory flavor.Ingredients:  1 tablespoon chili powder  1 teaspoon cumin...",
+    "content": "Here are eight ways to season tacos.1. Classic Taco SeasoningThis is a traditional seasoning mix that gives tacos a balanced, savory flavor.Ingredients:  1 tablespoon chili powder  1 teaspoon cumin  1 teaspoon paprika  1 teaspoon garlic powder  1 teaspoon onion powder  ½ teaspoon oregano  ¼ teaspoon cayenne pepper (optional for heat)  ½ teaspoon salt  ¼ teaspoon black pepperInstructions:  Mix all the ingredients together in a small bowl.  Add to ground beef, chicken, or vegetables while cooking.  Simmer with ¼ cup of water for a few minutes to allow the flavors to meld.2. Smoky Chipotle Taco SeasoningFor those who like a smoky kick, this blend uses chipotle for a deep, rich flavor.Ingredients:  1 tablespoon chipotle chili powder  1 teaspoon smoked paprika  1 teaspoon cumin  ½ teaspoon garlic powder  ½ teaspoon onion powder  ½ teaspoon ground coriander  ½ teaspoon salt  ¼ teaspoon black pepperInstructions:  Combine all the spices in a small dish.  Use to season beef, pork, or mushrooms for a smoky taco filling.  Add ¼ cup of water and simmer the mixture with the protein for a few minutes.3. Zesty Lime Taco SeasoningA bright, citrusy seasoning perfect for fish or chicken tacos.Ingredients:  1 tablespoon chili powder  1 teaspoon cumin  1 teaspoon paprika  ½ teaspoon garlic powder  ½ teaspoon onion powder  1 teaspoon lime zest (from 1 lime)  ½ teaspoon salt  ¼ teaspoon black pepperInstructions:  Mix all the dry spices and the lime zest in a bowl.  Add to your protein or vegetables while cooking.  Finish with fresh lime juice after cooking for an extra burst of flavor.4. Spicy Sriracha Taco SeasoningFor a fiery, tangy taco, this mix incorporates sriracha for heat.Ingredients:  1 tablespoon sriracha powder (or 2 teaspoons sriracha sauce)  1 teaspoon chili powder  1 teaspoon cumin  ½ teaspoon garlic powder  ½ teaspoon onion powder  ½ teaspoon paprika  ½ teaspoon salt  ¼ teaspoon cayenne pepperInstructions:  Combine the dry ingredients (if using sriracha powder) or add the sriracha sauce with the spices.  Stir into the meat or vegetables as they cook.  Add a little water to help the seasoning blend into the dish.5. Sweet and Spicy Pineapple Taco SeasoningA tropical twist on taco seasoning with a hint of sweetness from pineapple.Ingredients:  1 tablespoon chili powder  1 teaspoon cumin  ½ teaspoon garlic powder  ½ teaspoon onion powder  ½ teaspoon smoked paprika  ½ teaspoon salt  ¼ teaspoon black pepper  ½ teaspoon ground cinnamon  2 tablespoons crushed pineapple (drained)Instructions:  Mix all the spices together, then stir in the crushed pineapple.  Cook with your choice of protein, especially pork or chicken.  Add water if needed to evenly distribute the flavors while cooking.6. Cocoa &amp; Ancho Taco SeasoningThis unique seasoning incorporates unsweetened cocoa powder, often used in Mexican mole sauces, for a deep, earthy flavor that complements traditional taco ingredients.Ingredients:  1 teaspoon unsweetened cocoa powder  1 tablespoon ancho chili powder  1 teaspoon cumin  ½ teaspoon smoked paprika  ½ teaspoon garlic powder  ½ teaspoon onion powder  ½ teaspoon ground coriander  ½ teaspoon cinnamon  ½ teaspoon salt  ¼ teaspoon black pepperInstructions:  Mix: Combine all ingredients in a small bowl.  Cook: Brown your protein (beef, chicken, pork, or even tofu), then sprinkle the seasoning over it. Stir to coat evenly.  Simmer: Add ¼ cup of water or broth to the pan and simmer for 5 minutes to allow the flavors to meld.  Serve: Use the seasoned filling in tacos with toppings like shredded lettuce, queso fresco, and a drizzle of crema or guacamole.Why It Works:The cocoa powder adds depth and richness without making the tacos taste sweet. Combined with the smokiness of ancho chili powder and a hint of cinnamon, it brings an exciting twist that still feels grounded in traditional Mexican flavors.7. Korean Beef TacosThese Korean-inspired tacos combine sweet, savory, and spicy flavors, topped with a crunchy slaw for the perfect fusion dish.IngredientsFor the Beef:  1 lb (450g) thinly sliced beef (ribeye, sirloin, or brisket)  ¼ cup soy sauce  2 tablespoons brown sugar  1 tablespoon sesame oil  1 tablespoon rice vinegar  2 cloves garlic, minced  1 teaspoon ginger, grated  1 teaspoon gochujang (Korean chili paste) or sriracha  1 teaspoon sesame seeds (optional)  2 tablespoons vegetable oil (for cooking)For the Slaw:  2 cups shredded cabbage (red or green)  1 carrot, julienned  2 green onions, thinly sliced  2 tablespoons rice vinegar  1 tablespoon soy sauce  1 teaspoon sesame oil  ½ teaspoon sugar  ½ teaspoon gochugaru (Korean chili flakes) or chili powder  1 teaspoon sesame seeds (optional)For Assembly:  8 small flour or corn tortillas  Kimchi (optional, for topping)  Sliced jalapeños (optional, for heat)  Fresh cilantro or mint leaves  Lime wedgesInstructions  Marinate the Beef:          In a bowl, whisk together soy sauce, brown sugar, sesame oil, rice vinegar, minced garlic, ginger, and gochujang.      Add the beef slices to the marinade, ensuring they’re evenly coated. Cover and refrigerate for at least 30 minutes, or up to 2 hours.        Prepare the Slaw:          In a large bowl, toss the shredded cabbage, carrot, and green onions.      In a small bowl, mix rice vinegar, soy sauce, sesame oil, sugar, and gochugaru. Pour over the slaw and toss to combine. Sprinkle with sesame seeds if using. Chill until ready to serve.        Cook the Beef:          Heat the vegetable oil in a large skillet or grill pan over medium-high heat.      Cook the marinated beef in batches to avoid overcrowding, about 2-3 minutes per side, until browned and cooked through. Remove and keep warm.        Assemble the Tacos:          Warm the tortillas in a skillet or microwave.      Fill each tortilla with a portion of the cooked beef, a spoonful of slaw, and optional toppings like kimchi, jalapeños, or cilantro.      Serve with lime wedges on the side for a tangy finish.      Tips:  Swap beef for chicken, pork, or tofu for variety.  Gochujang and gochugaru can be found in most Asian grocery stores or online.  If you like extra heat, drizzle with a spicy mayo (mix mayo and sriracha).Enjoy these vibrant and flavorful Korean tacos for a fun twist on taco night! 🌮8. Sweet and Spicy Mango Habanero SeasoningIngredients:  1 tbsp chili powder  1 tsp ground cumin  1 tsp paprika  1/2 tsp garlic powder  1/2 tsp onion powder  1/2 tsp salt  1 ripe mango, diced  1-2 habanero peppers, finely chopped (adjust for heat)Instructions:  Mix the dry spices together.  Cook your meat until browned, add the seasoning mix, diced mango, and habanero. Stir well and let it simmer until the mango softens and flavors meld."
+  },
+  
+  {
+    "title": "Configure DC DNS Forwarders",
+    "url": "/posts/dns-forwarders/",
+    "categories": "domain controller",
+    "tags": "DC, domain, dns",
+    "date": "2025-01-12 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "To have your domain controller’s DNS forward internet activity to a custom DNS controller, you’ll want to configure DNS forwarding on the domain controller. Here’s how to do it:  Open the DNS Manag...",
+    "content": "To have your domain controller’s DNS forward internet activity to a custom DNS controller, you’ll want to configure DNS forwarding on the domain controller. Here’s how to do it:  Open the DNS Manager:          On the domain controller, open the “Server Manager” and go to “Tools” &gt; “DNS.”        Configure Forwarders:          In DNS Manager, expand your server and right-click on Forwarders.      Select Properties.      In the Forwarders tab, click Edit.      Add the IP address of your custom DNS controller.      Click OK to apply the changes.      "
+  },
+  
+  {
+    "title": "How To Fix `skey_protected could not be decrypted` Error",
+    "url": "/posts/duo-migration/",
+    "categories": "duo",
+    "tags": "duo, skey_protected",
+    "date": "2024-12-10 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "[error] The protected value for skey_protected could not be decrypted and therefore cannot be used. This may happen if the secret was encrypted on a different machine and copied to this machine. Pl...",
+    "content": "[error] The protected value for skey_protected could not be decrypted and therefore cannot be used. This may happen if the secret was encrypted on a different machine and copied to this machine. Please try protecting this value again.Reference Articles:  Duo Knowledge Base Article 5921  Duo Knowledge Base Article 23401. Open an Administrator Command Prompt2. Stop Duo Authentication Proxy Service and Close Duo Authentication Proxy Manager Applicationnet stop DuoAuthProxytaskkill /IM Duo_Authentication_Proxy_Manager.exe /F3. Navigate to the Installation Directorycd \"C:\\Program Files\\Duo Security Authentication Proxy\\bin\"4. Generate a New Encrypted Key  Use the authproxy_passwd.exe tool to re-encrypt your Duo secret key &lt;skey&gt;.  Replace &lt;skey&gt; with your actual secret key from Duo:    authproxy_passwd.exe &lt;skey&gt;        or use this command to auto-encrypt all plaintext values in authproxy.cfg that require encryption. See this reference article Duo Knowledge Base Article 2340 for further explanation.    \"C:\\Program Files\\Duo Security Authentication Proxy\\bin\\authproxy_passwd.exe\" --whole-config      5. Update the Configuration File (authproxy.cfg)notepad.exe \"C:\\Program Files\\Duo Security Authentication\" Proxy\\conf\\authproxy.cfg  Locate the line that begins with skey_protected authproxy.cfg and replace the old value with the new encrypted value you just generated:    skey_protected=encrypted_key      6. Restart the Duo Authentication Proxy Servicenet start DuoAuthProxy7. Test the Configuration\"C:\\Program Files\\Duo Security Authentication Proxy\\bin\\authproxy_connectivity_tool.exe\""
+  },
+  
+  {
+    "title": "Cron Job Commands",
+    "url": "/posts/crontab/",
+    "categories": "linux, cron",
+    "tags": "cron, crontab, schedule",
+    "date": "2024-11-13 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "How Does a Cron Job Work?  Cron Daemon (crond):          The cron daemon is a program that constantly runs in the background and checks every minute to see if there’s a scheduled task that needs to...",
+    "content": "How Does a Cron Job Work?  Cron Daemon (crond):          The cron daemon is a program that constantly runs in the background and checks every minute to see if there’s a scheduled task that needs to be executed.        Crontab (Cron Table):          The crontab is a file where you list all the tasks you want to schedule. Think of it as a “to-do list” for your computer.        Format of a Cron Job:          Each line in the crontab represents one task.      A line has two parts:                  Schedule (When the task should run).          Command (What the task should do).                    Basic Format of a Cron JobA cron job has 5 fields to define the schedule, followed by the command to run:MINUTE HOUR DAY MONTH WEEKDAY COMMAND  MINUTE: (0–59) What minute of the hour?  HOUR: (0–23) What hour of the day?  DAY: (1–31) What day of the month?  MONTH: (1–12) Which month?  WEEKDAY: (0–6) Which day of the week? (0 = Sunday, 1 = Monday, etc.)  COMMAND: The program or script to run.Examples:1. Reboot the system every day at 5:00 AM:0 5 * * * /sbin/reboot  0: Minute = 0 (on the hour).  5: Hour = 5 AM.  *: Any day of the month.  *: Any month.  *: Any weekday.2. Delete temporary files at midnight on the 1st of every month:0 0 1 * * rm -rf /tmp/*  0 0: At 12:00 AM (midnight).  1: On the 1st of the month.  *: Any month.  *: Any weekday.3. Run a backup script every Friday at 6 PM:0 18 * * 5 /path/to/backup.sh  0 18: At 6:00 PM.  *: Any day.  5: Friday.How to Set a Cron Job  Open your crontab file for editing:    crontab -e        Add your task in the correct format.  Save and exit the editor.Check Your Cron Jobs  To view your scheduled jobs:```bashcrontab -l"
+  },
+  
+  {
+    "title": "CHIRP Install Linux Mint",
+    "url": "/posts/chirp-install/",
+    "categories": "linux",
+    "tags": "chirp, radio, pyhton",
+    "date": "2024-09-12 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Official InstructionsThe official instructions for installing CHIRP on Linux are here:https://chirpmyradio.com/projects/chirp/wiki/ChirpOnLinuxMy IssueI encountered a problem with Step 2 in the off...",
+    "content": "Official InstructionsThe official instructions for installing CHIRP on Linux are here:https://chirpmyradio.com/projects/chirp/wiki/ChirpOnLinuxMy IssueI encountered a problem with Step 2 in the official instructions. Possibly from too many step twos.  I initially installed CHIRP using pipx as instructed.  When I tried to update to a newer version, I uninstalled CHIRP with pipx.  During the reinstall, pipx complained about not being able to build yattag.How I Fixed ItTo resolve this issue:  I installed python3-pip using the following command:    sudo apt install python3-pip        Then I installed the new version of CHIRP:    pipx install --system-site-packages ./chirp-xxxxxxxx-py3-none-any.whl      My Unofficial Install InstructionsStep 1: Install Required Packagessudo apt install python3-wxgtk4.0 python3-pip pipxStep 2: Install CHIRPNavigate to the directory where your CHIRP .whl package is located and install it with:pipx install --system-site-packages ./chirp-xxxxxxxx-py3-none-any.whl"
+  },
+  
+  {
+    "title": "Right-Click File Hash Check - Linux Mint",
+    "url": "/posts/checksum-mint/",
+    "categories": "linux",
+    "tags": "bash, file, hash, menu",
+    "date": "2024-09-12 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Here’s how you can integrate a file hash check script into the right-click menu in Linux Mint:1. Create the File Hash Script      Create the script (/usr/local/bin/hash-check.sh):    sudo nano /usr...",
+    "content": "Here’s how you can integrate a file hash check script into the right-click menu in Linux Mint:1. Create the File Hash Script      Create the script (/usr/local/bin/hash-check.sh):    sudo nano /usr/local/bin/hash-check.sh            Paste the script below and save it:    #!/bin/bash# Get file path from the context menufile=\"$1\"# Check if file existsif [ ! -f \"$file\" ]; then  echo \"File not found!\"  exit 1fi# Choose algorithmecho \"Choose a hash algorithm:\"echo \"1) SHA1\"echo \"2) SHA256\"echo \"3) SHA384\"echo \"4) SHA512\"echo \"5) MD5\"echo \"6) Show all\"read -p \"Enter choice [1-7]: \" choicecase $choice in  1)    sha1sum \"$file\"    ;;  2)    sha256sum \"$file\"    ;;  3)    sha384sum \"$file\"    ;;  4)    sha512sum \"$file\"    ;;  5)    md5sum \"$file\"    ;;  6)    echo \"SHA1:\"    sha1sum \"$file\"    echo \"SHA256:\"    sha256sum \"$file\"    echo \"SHA384:\"    sha384sum \"$file\"    echo \"SHA512:\"    sha512sum \"$file\"    echo \"MD5:\"    md5sum \"$file\"    ;;  *)    echo \"Invalid choice! Press Enter to quit dumbass\"    ;;esac            Make the script executable:    sudo chmod +x /usr/local/bin/hash-check.sh        You can also verify the permissions with:     ls -l /usr/local/bin/hash-check.sh        You should see something like this for the file:     -rwxr-xr-x 1 root root ... /usr/local/bin/hash-check.sh        The x means it’s executable.  2. Create Nemo Action for MintNemo supports custom actions through the .nemo_action file. You can define the right-click menu item for your hash-check script like this:      Create a custom action file in the Nemo actions folder:    mkdir -p ~/.local/share/nemo/actionsnano ~/.local/share/nemo/actions/hash-check.nemo_action            Add the following content to the file:    [Nemo Action]Name=Check File HashComment=Calculate file hash (MD5, SHA1, SHA256, etc.)Exec=/usr/local/bin/hash-check.sh %FIcon=utilities-terminalSelection=AnyExtensions=any;Terminal=true              Exec=/usr/local/bin/hash-check.sh %F: This will pass the selected file(s) to the hash-check script.      Terminal=true: Ensures that it opens in a terminal window so you can see the output.            Save and close the file.  3. Testing File Hash Script      Restart Nemo to apply the new action:    nemo --quit            Right-click a file in Nemo, and you should see a new menu option called “Check File Hash”. Selecting it will run the hash-check script, allowing you to choose the algorithm and see the results in the terminal.    ChatGPT can be credited for this script. I only made a few minor changes."
+  },
+  
+  {
+    "title": "Change Request Documentation",
+    "url": "/posts/change-request/",
+    "categories": "support",
+    "tags": "change, procedure, planning, management",
+    "date": "2024-09-07 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "A Change Request is a detailed, step-by-step guide used in IT projects to ensure that network, server, or other infrastructure changes are implemented smoothly, with minimal disruption and risk. Be...",
+    "content": "A Change Request is a detailed, step-by-step guide used in IT projects to ensure that network, server, or other infrastructure changes are implemented smoothly, with minimal disruption and risk. Below are some key elements and examples of what a good Change Request for IT projects should include:1. Project Overview  Purpose: Why the change is being made.  Scope: Systems, services, and departments impacted by the change.  Approval: Who has approved the change (including change control board or manager approval).  Planned Start and End Dates/Times.Example:  Purpose: Upgrade the network switch firmware to address security vulnerabilities and improve performance.  Scope: This change will impact Switch A (Data Center Core), affecting VLAN 10, 20, and 30. During the upgrade, there will be a temporary network outage in the following segments: Corporate LAN, Guest Wi-Fi, and VOIP services.2. Pre-Change Checklist  Prerequisites: Any requirements before starting, such as backup completion or preliminary tests.  Documentation: Ensure all documentation is up-to-date, including network diagrams, configurations, etc.  Notification: List of departments/teams to be notified before the change.Example:      All configurations are backed up to the secure NAS: /backups/core_switch/2024-09-07.    Ensure all team members have reviewed the firmware release notes.    Notify affected teams (IT Operations, Corporate Services) 24 hours before the scheduled downtime.  3. Roles and Responsibilities  Team Lead: Name of the person responsible for the overall change.  Implementers: Individuals responsible for executing the steps.  Communication Lead: Person responsible for updating stakeholders during and after the change.Example:      Team Lead: John Doe, Network Engineer    Implementers: Alice Smith (Switch Configuration), Bob Johnson (Monitoring)    Communication Lead: Sarah Wilson (Updates to leadership and IT department)  4. Detailed Step-by-Step Procedure  List each task in chronological order.  Include precise commands or GUI actions for each step.  Mention estimated time for each step and who is responsible.Example:  Disable Port Monitoring (Alice Smith, 5 mins)          Run: no monitor session 1        Verify Current Switch Firmware Version (Bob Johnson, 3 mins)          Run: show version        Upload New Firmware (Alice Smith, 10 mins)          Upload: copy tftp://192.168.1.1/new-firmware.bin flash:        Install Firmware (Alice Smith, 20 mins)          Run: install add file flash:new-firmware.bin activate commit        Reboot Switch (John Doe, 10 mins)          Run: reload        Post-Reboot Checks (Bob Johnson, 15 mins)          Verify services (ping test, VLAN connectivity, etc.)      5. Rollback Plan  Clear instructions on how to revert the changes if the procedure fails.  Define criteria for when to initiate the rollback.Example:  Rollback Trigger: If services are down for more than 30 minutes post-upgrade.      Reboot switch into old firmware using backup image: boot flash:old-firmware.bin    Restore configuration from the NAS backup: /backups/core_switch/2024-09-07/config.txt    Notify team lead if rollback is initiated.  6. Post-Change Validation and Monitoring  Specify checks that need to be performed after the change to confirm successful implementation.  Assign monitoring responsibilities for any post-change issues.Example:      Check switch logs for errors: show log    Verify VLAN routing is operational: Test with ping between VLAN 10, 20, and 30.    Monitor network traffic for 24 hours to detect any anomalies.  7. Communication and Reporting  Specify who needs to be informed when the change is complete and whether any issues were encountered.  Provide a final report on the success or failure of the change.Example:      Notify stakeholders that the change was successful via email.    Report any anomalies to the IT manager within 1 hour post-implementation.  8. Contingency Planning  List any backup or emergency procedures if the change fails and the rollback is not possible.Example:      In case of network failure, escalate to Network Operations for further troubleshooting.    Use backup switches and reroute traffic through Switch B if Switch A does not come back online.  By using this structure, IT teams can ensure consistency, minimize risk, and handle unexpected issues efficiently during network or server changes."
+  },
+  
+  {
+    "title": "Fix Missing Attributes Tab In AD",
+    "url": "/posts/missing-attributes/",
+    "categories": "windows, server, active directory",
+    "tags": "attributes, active directory, server",
+    "date": "2024-05-27 13:01:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "It wasn’t easy to find the correct solution, so I’m posting a link here.https://www.farmhousenetworking.com/troubleshooting/missing-active-directory-attribute-editor-tab/Here is a pdf of the post f...",
+    "content": "It wasn’t easy to find the correct solution, so I’m posting a link here.https://www.farmhousenetworking.com/troubleshooting/missing-active-directory-attribute-editor-tab/Here is a pdf of the post from Farmhouse Networking jic."
+  },
+  
+  {
+    "title": "Install Omada SDN Controller on Debian 12.8",
+    "url": "/posts/omada-debian/",
+    "categories": "linux, debian, omada",
+    "tags": "linux, debian, omada, bookwork",
+    "date": "2024-04-12 13:01:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "MongoDB v4.4 End of LifeAs of February 29, 2024, MongoDB v4.4 has reached end of life and is no longer supported by MongoDB. This guide and script example still uses MongoDB 4.4.The latest Omada Co...",
+    "content": "MongoDB v4.4 End of LifeAs of February 29, 2024, MongoDB v4.4 has reached end of life and is no longer supported by MongoDB. This guide and script example still uses MongoDB 4.4.The latest Omada Controller, v5.14.32.3 (released on November 1, 2024), now supports MongoDB 7.Hardware Requirements for MongoDB 7To run MongoDB 7, each host must meet the following requirements:  Disk Space: 10 GB of free disk space plus additional space for MongoDB data.  RAM: A minimum of 4 GB.Processor Requirements for Intel x86_64 ArchitecturesMongoDB 7 requires the following minimum Intel x86_64 microarchitecture:  Core Processor: Sandy Bridge or later  Celeron or Pentium Processor: Tiger Lake or laterInstall ScriptDownload and Install omada_setup Scriptwget https://www.dbqrs.com/files/scripts/omada_setup.sh &amp;&amp; chmod +x omada_setup.sh &amp;&amp; ./omada_setup.shorManually Run Commands as Root  If you have installed sudo or are using an OS such Ubuntu, prefix all commands with sudo.Ensure the system is up-to-date, and reboot if necessary:apt update &amp;&amp; apt upgradeAdd the following export path to the end of the root user’s .bashrc file:nano /root/.bashrcexport PATH=/sbin:/bin:/usr/bin:/usr/sbin:/usr/local/sbin:/usr/local/binApply the new bash settings:source /root/.bashrcInstall openjdk, curl, jsvc, wget, and required OpenSSL libraries:apt install openjdk-17-jre-headless curl jsvc wgetwget http://ftp.debian.org/debian/pool/main/o/openssl/libssl1.1_1.1.1w-0+deb11u1_amd64.deb -O libssl.deb &amp;&amp; dpkg -i libssl.debDownload and install MongoDB, then enable and start the service:wget https://repo.mongodb.org/apt/debian/dists/buster/mongodb-org/4.4/main/binary-amd64/mongodb-org-server_4.4.29_amd64.deb -O mongodb.deb &amp;&amp; dpkg -i mongodb.debsystemctl enable mongod &amp;&amp; systemctl start mongodDownload and install the latest Omada SDN Controller version (as of November 01, 2024):wget https://static.tp-link.com/upload/software/2024/202411/20241101/Omada_SDN_Controller_v5.14.32.3_linux_x64.deb -O omada.deb &amp;&amp; dpkg -i omada.deb"
+  },
+  
+  {
+    "title": "Hide or Unhide User from GAL using ADUC",
+    "url": "/posts/user-visibility-in-gal/",
+    "categories": "active directory, office365, email",
+    "tags": "active directory, office365, email",
+    "date": "2024-04-04 13:01:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Just in case you didn’t know-GAL=Global Address ListADUC=Active Directory Users &amp; ComputersThis is going to apply when using AzureAD Connect, now known as Microsoft Entra Connect. Active Direct...",
+    "content": "Just in case you didn’t know-GAL=Global Address ListADUC=Active Directory Users &amp; ComputersThis is going to apply when using AzureAD Connect, now known as Microsoft Entra Connect. Active Directory now becomes the authority. Respect My Authoritah!Find msExchHideFromAddressLists and set it to TRUE or FALSE depending on your needs. You may also need to look for showInAddressBook and delete it if necessary."
+  },
+  
+  {
+    "title": "Resolve google-protobuf Error",
+    "url": "/posts/goole-protobuf.md/",
+    "categories": "github, ruby",
+    "tags": "github, google-protobuf, ruby, jeckyl",
+    "date": "2024-01-15 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "I recently ran into an issue where github would fail building and deploying dbqrs.com.I got the following errror messages:An error occurred while installing google-protobuf (3.25.2), and Bundler ca...",
+    "content": "I recently ran into an issue where github would fail building and deploying dbqrs.com.I got the following errror messages:An error occurred while installing google-protobuf (3.25.2), and Bundler cannot continue.  '/opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle' failed with exit code 5  To reolve the issue I changed ruby-version: 3 to ruby-version: 3.2 in.github/workflows/pages-deploy.yml"
+  },
+  
+  {
+    "title": "Install UniFi Controller on Debian 12",
+    "url": "/posts/unifi-contoller/",
+    "categories": "debian, unifi",
+    "tags": "linux, debian, bookworm, unifi",
+    "date": "2024-01-13 12:01:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "Install LibSSL, MongoDB and OpenJDKIf not already installed, install sudo and add your username to the sudo group./sbin/adduser USERNAME sudoDownload and install LibSSL 1.1.1 needed for MongoDBwget...",
+    "content": "Install LibSSL, MongoDB and OpenJDKIf not already installed, install sudo and add your username to the sudo group./sbin/adduser USERNAME sudoDownload and install LibSSL 1.1.1 needed for MongoDBwget http://ftp.debian.org/debian/pool/main/o/openssl/libssl1.1_1.1.1w-0+deb11u1_amd64.deb -O libssl.deb &amp;&amp; sudo dpkg -i libssl.debDownload and install MongoDB 4.4.27 - current highest version supported UniFi Controller 8.0wget https://repo.mongodb.org/apt/debian/dists/buster/mongodb-org/4.4/main/binary-amd64/mongodb-org-server_4.4.27_amd64.deb -O mongodb.deb &amp;&amp; sudo dpkg -i mongodb.debEnable and start MongoDBsudo systemctl enable mongodb &amp;&amp; sudo systemctl start mongodbInstall the OpenJDK 17 runtime needed by the UniFi Controllersudo apt install openjdk-17-jre-headlessInstall UniFi ControllerAdd UniFi Repositoryecho 'deb [arch=amd64 signed-by=/usr/share/keyrings/ubiquiti-archive-keyring.gpg] https://www.ui.com/downloads/unifi/debian stable ubiquiti' | sudo tee /etc/apt/sources.list.d/100-ubnt-unifi.list &gt;/dev/nullAdd GPG key for UniFi Repositorycurl https://dl.ui.com/unifi/unifi-repo.gpg | sudo tee /usr/share/keyrings/ubiquiti-archive-keyring.gpg &gt;/dev/nullUpdate APT and Installsudo apt update &amp;&amp; sudo apt install unifiAccess UniFi Controller https://IPADDRESS:8443"
+  },
+  
+  {
+    "title": "Install Wazuh on Ubunutu 22.04",
+    "url": "/posts/wazuh-install/",
+    "categories": "siem",
+    "tags": "ubuntu, siem, wazuh",
+    "date": "2023-11-19 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "Install depencies.sudo apt update &amp;&amp; sudo apt install curl apt-transport-https unzip wget libcap2-bin software-properties-common lsb-release gnupg2Install Wazuh. note: Check the current ver...",
+    "content": "Install depencies.sudo apt update &amp;&amp; sudo apt install curl apt-transport-https unzip wget libcap2-bin software-properties-common lsb-release gnupg2Install Wazuh. note: Check the current version of Wazuh and adjust version in the command accordingly.curl -sO https://packages.wazuh.com/4.6/wazuh-install.sh &amp;&amp; chmod 744 wazuh-install.sh &amp;&amp; bash ./wazuh-install.sh -aNicked from KrishnenduWazuh Quick Start Guide"
+  },
+  
+  {
+    "title": "Set Ubuntu 22.04 Resolution in Hyper-V",
+    "url": "/posts/hyperv-resolution/",
+    "categories": "virtualization, linux, hyper-v",
+    "tags": "ubuntu, hyper-v, resolution",
+    "date": "2023-11-19 01:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "Here are two ways to set the resolution of Ubuntu 22.04, when virtualizing in Hyper-VMethod 1Run this command in PoweShell. note:Change Ubuntu to the name of your virtual machine.set-vmvideo Ubuntu...",
+    "content": "Here are two ways to set the resolution of Ubuntu 22.04, when virtualizing in Hyper-VMethod 1Run this command in PoweShell. note:Change Ubuntu to the name of your virtual machine.set-vmvideo Ubuntu -horizontalresolution:1920 -verticalresolution:1080 -resolutiontype singleScaling can also be set in bash uing this command.gsettings set org.gnome.desktop.interface scaling-factor 2Method 2Edit grubsudo nano /etc/default/grubModify GRUB_CMDLINE_LINUX_DEFAULT= with video=hyperv_fb:1920x1080note: I usually remove quiet splash.GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash video=hyperv_fb:1920x1080\"Finally update grub and install linux-image-extra-virtualsudo update-grub &amp;&amp; sudo apt install linux-image-extra-virtual -yFinally reboot."
+  },
+  
+  {
+    "title": "Deleting Kernels Mint",
+    "url": "/posts/kernel/",
+    "categories": "linux",
+    "tags": "linux, mint, /boot, kernel",
+    "date": "2023-10-07 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "I often play with kernels and sometimes end up filling up /boot. Here’s how to delete them.dpkg --list | egrep -i --color 'linux-image|linux-headers'sudo apt remove --purge linux-image-sudo apt rem...",
+    "content": "I often play with kernels and sometimes end up filling up /boot. Here’s how to delete them.dpkg --list | egrep -i --color 'linux-image|linux-headers'sudo apt remove --purge linux-image-sudo apt remove --purge linux-headers-sudo apt autoremoveexample - sudo apt remove –purge linux-image-6.2.0-*"
+  },
+  
+  {
+    "title": "Reduce QRM Noise with Loop Antenna",
+    "url": "/posts/reduce-noise/",
+    "categories": "",
+    "tags": "youtube, radio, antenna, qrm",
+    "date": "2023-08-07 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "During the Field Day event, I had the opportunity to engage with another ham, KJ0DX, who introduced me to this video. I was impressed by the significant effect of a ground-positioned loop antenna, ...",
+    "content": "During the Field Day event, I had the opportunity to engage with another ham, KJ0DX, who introduced me to this video. I was impressed by the significant effect of a ground-positioned loop antenna, as he demonstrated in the video."
+  },
+  
+  {
+    "title": "Kenwood TM-231a - Program Repeaters",
+    "url": "/posts/tm-231a-program/",
+    "categories": "Radio",
+    "tags": "radio, kenwood, tm-231a, repeater, program",
+    "date": "2023-08-05 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Was at a hamfest and picked up an old, Kenwood TM-231a for $35. It’s in great condition and works really good for it’s age, 30+ years. I got it for the purpose of experimentation, so if I break it,...",
+    "content": "Was at a hamfest and picked up an old, Kenwood TM-231a for $35. It’s in great condition and works really good for it’s age, 30+ years. I got it for the purpose of experimentation, so if I break it, no big deal.  Press the VFO button to leave memory mode  Turn the VFO to the receive frequency of the repeater  If needed, press Shift to set the fequency shift -/+ (blank for simplex)  To set the PLL tone, press Tone until a T appears in the upper right side of the display. Long press F, until F flashes, and then press Tone again. Select desired PLL tone frequency by turning the VFO and press Tone to set  To save the repeater into memory, press F and turn the VFO to the desired memory location, 1 through 20, then press MR"
+  },
+  
+  {
+    "title": "Windows 11 Tweaks",
+    "url": "/posts/Windows-11-Tweaks/",
+    "categories": "Windows 11",
+    "tags": "windows 11, tweaks, bing, right-click, telemetry, recall, hash",
+    "date": "2023-07-07 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "This may or may not get updated. My DD is Mint, but at work it is Windows 11. These are the things most important to me.Restore The Classic Right-Click Menu - cmd as userreg.exe add \"HKCU\\Software\\...",
+    "content": "This may or may not get updated. My DD is Mint, but at work it is Windows 11. These are the things most important to me.Restore The Classic Right-Click Menu - cmd as userreg.exe add \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32\" /f /veDisable Bing in the Start Menu - cmd as Administratorreg.exe add HKLM\\Software\\Policies\\Microsoft\\Windows\\Explorer /v DisableSearchBoxSuggestions /t REG_DWORD /d 00000001Disable Some Telemetry - cmd as Administratorreg.exe add HKLM\\Software\\Policies\\Microsoft\\Windows\\DataCollection /v AllowTelemetry /t REG_DWORD /d 00000000Disable Connected User Experiences and Telemetry Service in Services or run these PowerShell commands as Administrator:stop-service diagtrackset-service diagtrack -startuptype disabledGenerate Hash Values with right-clickThis is one of my favorite tweaks to Windows 11! Save with .reg extension and merge.  Source: https://www.tenforums.com/tutorials/78681-add-file-hash-context-menu-windows-8-10-a.htmlWindows Registry Editor Version 5.00; Created by: Shawn Brink; Created on: March 5th 2017; Updated on: March 8, 2024; Tutorial: https://www.tenforums.com/tutorials/78681-file-hash-context-menu-add-windows-8-windows-10-a.html[HKEY_CLASSES_ROOT\\*\\shell\\hash]\"MUIVerb\"=\"Hash\"\"SubCommands\"=\"\"; SHA1[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\01menu]\"MUIVerb\"=\"SHA1\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\01menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA1 | format-list\"; SHA256[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\02menu]\"MUIVerb\"=\"SHA256\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\02menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA256 | format-list\"; SHA384[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\03menu]\"MUIVerb\"=\"SHA384\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\03menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA384 | format-list\"; SHA512[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\04menu]\"MUIVerb\"=\"SHA512\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\04menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA512 | format-list\"; MACTripleDES[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\05menu]\"MUIVerb\"=\"MACTripleDES\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\05menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm MACTripleDES | format-list\"; MD5[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\06menu]\"MUIVerb\"=\"MD5\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\06menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm MD5 | format-list\"; RIPEMD160[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\07menu]\"MUIVerb\"=\"RIPEMD160\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\07menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm RIPEMD160 | format-list\"; Allget-filehash -literalpath '%1' -algorithm RIPEMD160 | format-list[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\08menu]\"CommandFlags\"=dword:00000020\"MUIVerb\"=\"Show all\"[HKEY_CLASSES_ROOT\\*\\shell\\hash\\shell\\08menu\\command]@=\"powershell -noexit get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA1 | format-list;get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA256 | format-list;get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA384 | format-list;get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm SHA512 | format-list;get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm MACTripleDES | format-list;get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm MD5 | format-list;get-filehash -literalpath \\\\\\\"%1\\\\\\\" -algorithm RIPEMD160 | format-list\"Windows Recall - Check Status, Disable or Enable.Command as AdministratorCheck Status: Dism /Online /Get-Featureinfo /Featurename:Recall Disable: Dism /Online /Disable-Feature /Featurename:Recall Enable: Dism /Online /Enable-Feature /Featurename:Recall"
+  },
+  
+  {
+    "title": "Hyper-V One Way Communication, Host To VMs",
+    "url": "/posts/hyper-v-communication/",
+    "categories": "hyper-v",
+    "tags": "repair, communication, virtual switch",
+    "date": "2023-06-09 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "I recently encountered an issue with Hyper-V where the host system was able to successfully ping the virtual machines (VMs), but the VMs were unable to ping the host. However, the VMs were able to ...",
+    "content": "I recently encountered an issue with Hyper-V where the host system was able to successfully ping the virtual machines (VMs), but the VMs were unable to ping the host. However, the VMs were able to communicate with each other and other devices connected to the physical network without any problems.This issue appears to be relatively common, yet there is a lack of definitive solutions available. In order to resolve the problem, I removed and re-added the virtual switch, and I also removed and re-added the network cards associated with each VM.UpdateI found another issue where the network adapters are misconfigured. After installing Hyper-V on Server 2022 for example, when creating a virtual switch, it will create a virtual network adapter. If you want the host server and the virtual machines to communicate with each other when the virtual adapter is set up for the virtual switch, you no longer configure IP addresses on the hardware network adapter. Instead, the IP addressing is done on the virtual switch’s virtual adapter."
+  },
+  
+  {
+    "title": "Use DISM To Maintain/Repair A Windows Installation",
+    "url": "/posts/dism-repair/",
+    "categories": "windows",
+    "tags": "repair, shared, windows, dism",
+    "date": "2023-06-08 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Use this command to restore the health of your Windows installDISM /Online /Cleanup-Image /RestoreHealthUse this command to restore the health of your Windows install while offline. You will have m...",
+    "content": "Use this command to restore the health of your Windows installDISM /Online /Cleanup-Image /RestoreHealthUse this command to restore the health of your Windows install while offline. You will have mount an image or use a bootable flashdrive.DISM /Online /Cleanup-Image /RestoreHealth /Source:D:\\Sources\\install.esdAnalyze the component store to see what can be removedDISM /Online /Cleanup-Image /AnalyzeComponentStoreCleanup old filesDISM /Online /Cleanup-Image /StartComponentCleanupReset the base to cleanup even furtherDISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase"
+  },
+  
+  {
+    "title": "Error 740 When Adding Shared Printer Win10/11",
+    "url": "/posts/error-740-printer/",
+    "categories": "windows",
+    "tags": "error 740, printers, shared, windows",
+    "date": "2023-06-08 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Error 740 occurs from lack of privileges. It’s an easy fix.Open cmd prompt with administrator privileges and enter this command to start the add printer wizard with elevated privileges:rundll32 pri...",
+    "content": "Error 740 occurs from lack of privileges. It’s an easy fix.Open cmd prompt with administrator privileges and enter this command to start the add printer wizard with elevated privileges:rundll32 printui.dll,PrintUIEntry /ilAfterwards add printer as you normally would."
+  },
+  
+  {
+    "title": "Disable Delete In Right-click Menu In Mint",
+    "url": "/posts/disable-delete/",
+    "categories": "linux",
+    "tags": "linux, mint, right-click, menu",
+    "date": "2023-05-23 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "I developed a habit of using delete instead of moving to trash. I deleted a couple things I regretted, so I disabled delete from the right-click menu.In the file manager go to Edit –&gt; Preference...",
+    "content": "I developed a habit of using delete instead of moving to trash. I deleted a couple things I regretted, so I disabled delete from the right-click menu.In the file manager go to Edit –&gt; Preferences –&gt; Behavior tab and uncheck Include a Delete command that bypasses Trash"
+  },
+  
+  {
+    "title": "Re-enable Registry Backup Win10/11",
+    "url": "/posts/registry-backup/",
+    "categories": "windows",
+    "tags": "windows, registry",
+    "date": "2023-05-09 02:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "In Windows 10/11 system restore points and registry backups are disabled. Here is a workaround to re-enable regsitry backups. Enabling system restore is a no-brainer.Merge this registry fileWindows...",
+    "content": "In Windows 10/11 system restore points and registry backups are disabled. Here is a workaround to re-enable regsitry backups. Enabling system restore is a no-brainer.Merge this registry fileWindows Registry Editor Version 5.00[HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Configuration Manager]\"EnablePeriodicBackup\"=dword:00000001\"BackupCount\"=dword:00000003Create a new task in task scheduler to run daily/weekly with this commandschtasks /run /i /tn \"\\Microsoft\\Windows\\Registry\\RegIdleBackup\"Check C:\\Windows\\System32\\config\\RegBack for created files"
+  },
+  
+  {
+    "title": "Reset Admin Pass",
+    "url": "/posts/pass-reset/",
+    "categories": "windows",
+    "tags": "windows, password",
+    "date": "2023-05-08 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "in directory \\windows\\system32&gt; ren Utilman.exe Utilman.bakcopy cmd.exe Utilman.exerebootnet user administrator newpassword",
+    "content": "in directory \\windows\\system32&gt; ren Utilman.exe Utilman.bakcopy cmd.exe Utilman.exerebootnet user administrator newpassword"
+  },
+  
+  {
+    "title": "QDirStat",
+    "url": "/posts/qdirstat/",
+    "categories": "linux, utilities",
+    "tags": "linux, apps",
+    "date": "2023-05-01 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "QDirStatsudo apt install qdirstat",
+    "content": "QDirStatsudo apt install qdirstat"
+  },
+  
+  {
+    "title": "Mustard BBQ Sauce Recipe",
+    "url": "/posts/mustard-bbq-recipe/",
+    "categories": "Recipes",
+    "tags": "recipe, bbq, mustard",
+    "date": "2023-04-30 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Recipe from Swig and Swine Charleston, SC.3C Yellow Mustard1C Brown Sugar1C Apple Cider Vinegar1/4C Worcestershire1/4C Molasses2tbs Mustard Powder1tsp Cayenne",
+    "content": "Recipe from Swig and Swine Charleston, SC.3C Yellow Mustard1C Brown Sugar1C Apple Cider Vinegar1/4C Worcestershire1/4C Molasses2tbs Mustard Powder1tsp Cayenne"
+  },
+  
+  {
+    "title": "duf, alternative for df -h",
+    "url": "/posts/duf/",
+    "categories": "linux, commandline",
+    "tags": "linux, apps, bash, commandline",
+    "date": "2023-04-20 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "duf is a nice alternative for df.sudo apt install dufSome other commands to tryduf /etc/ /root/duf --sort sizeHow to use dufUsage of duf:  -all    \tinclude pseudo, duplicate, inaccessible file syst...",
+    "content": "duf is a nice alternative for df.sudo apt install dufSome other commands to tryduf /etc/ /root/duf --sort sizeHow to use dufUsage of duf:  -all    \tinclude pseudo, duplicate, inaccessible file systems  -hide string    \thide specific devices, separated with commas:    \tlocal, network, fuse, special, loops, binds  -hide-fs string    \thide specific filesystems, separated with commas  -inodes    \tlist inode information instead of block usage  -json    \toutput all devices in JSON format  -only string    \tshow only specific devices, separated with commas:    \tlocal, network, fuse, special, loops, binds  -only-fs string    \tonly specific filesystems, separated with commas  -output string    \toutput fields: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem  -sort string    \tsort output by: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem (default \"mountpoint\")  -style string    \tstyle: unicode, ascii (default \"unicode\")  -theme string    \tcolor themes: dark, light (default \"dark\")  -version    \tdisplay version  -warnings    \toutput all warnings to STDERR  -width uint    \tmax output width"
+  },
+  
+  {
+    "title": "My Bash Aliases",
+    "url": "/posts/bash-alias/",
+    "categories": "linux, bash",
+    "tags": "linux, bash, commandline",
+    "date": "2023-04-20 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "to edit bash, must be in /homenano .bashrcto load new edits into bashsource .bashrcclear screen, windows commandalias cls='clear'put the apt update and upgrade in one command, creates a dated log f...",
+    "content": "to edit bash, must be in /homenano .bashrcto load new edits into bashsource .bashrcclear screen, windows commandalias cls='clear'put the apt update and upgrade in one command, creates a dated log filealias update='sudo apt update &amp;&amp; sudo apt upgrade -y 2&gt;&amp;1 | tee ~/.loggy/\"$(date +%F-%S)-upgrade.log\" 'search apt for packagesalias pksearch='sudo apt search'typical cleanup commandsalias cleanup='sudo apt autoremove &amp;&amp; sudo apt autoclean &amp;&amp; sudo apt clean'automatically set to resume partially downloaded filealias wget='wget -c'executes neofetchalias nn='neofetch'displays system information and current dnsalias ii='inxi -b -A -i &amp;&amp; nmcli dev show | grep 'IP4.DNS' 'systemctl startalias sstart='sudo systemctl start'systemctl stopalias sstop='sudo systemctl stop'systemctl restartalias srestart='sudo systemctl restart' systemctl statusalias sstatus='sudo systemctl status'ping tester with log filealias pingtest='ping -i 1 -s 1472 8.8.8.8 | while read line; do echo \"$(date \"+%Y-%m-%d %H:%M:%S\") - $line\"; done | tee -a ~/logs/\"$(date \"+%F\")-ping.log\"'local ip addressalias myip=\"ip -o -4 addr show | awk '{print \\$2, \\$4}'\"get your current public ip with command pubippubip() {    # Define the API URL (you can change it if needed)    local api_url=\"http://ipinfo.io/json\"        # Fetch data using curl and parse it with jq    if command -v jq &gt;/dev/null 2&gt;&amp;1; then        # Ensure jq is installed        curl -s \"$api_url\" | jq -r '            \"IP: \\(.ip)\",            \"Hostname: \\(.hostname)\",            \"City: \\(.city)\",            \"Region: \\(.region)\",            \"Country: \\(.country)\",            \"Org: \\(.org)\"        '    else        echo \"jq is required but not installed. Install jq and try again.\"    fi}"
+  },
+  
+  {
+    "title": "Open Webpage With Specified Browser",
+    "url": "/posts/browser-shortcut/",
+    "categories": "browser",
+    "tags": "linux, windows, browser, shortcut",
+    "date": "2023-04-12 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Open Webpage With Specified BrowserWindowsChrome: “C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe” https://www.dbqrs.comIE: “C:\\Program Files\\Internet Explorer\\iexplore.exe” https://ww...",
+    "content": "Open Webpage With Specified BrowserWindowsChrome: “C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe” https://www.dbqrs.comIE: “C:\\Program Files\\Internet Explorer\\iexplore.exe” https://www.dbqrs.comEdge “C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe” https://www.dbqrs.comFirefox: “C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe” https://www.dbqrs.comLinuxfirefox %u https://www.dbqrs.com/usr/bin/google-chrome-stable %U https://www.dbqrs.com/usr/bin/vivaldi-stable %U https://www.dbqrs.comchromium %U https://www.dbqrs.com"
+  },
+  
+  {
+    "title": "Check File Checksum Linux",
+    "url": "/posts/checksum/",
+    "categories": "linux, bash",
+    "tags": "linux, bash, checksum",
+    "date": "2023-04-08 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "In this example we are checking the sha256 sum for the linux mint iso.echo \"2df322f030d8ff4633360930a92d78829d10e515d2f6975b9bdfd1c0de769aca *linuxmint-21.1-cinnamon-64bit.iso\" | sha256sum  --check",
+    "content": "In this example we are checking the sha256 sum for the linux mint iso.echo \"2df322f030d8ff4633360930a92d78829d10e515d2f6975b9bdfd1c0de769aca *linuxmint-21.1-cinnamon-64bit.iso\" | sha256sum  --check"
+  },
+  
+  {
+    "title": "Install Virtualbox Guest Additions",
+    "url": "/posts/guest-additions/",
+    "categories": "linux, virtualbox",
+    "tags": "linux, debian, fedora, ubuntu, virtualbox",
+    "date": "2023-04-05 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "VBoxLinuxAdditions.runDebiansudo apt install build-essential module-assistant dkms linux-headers-$(uname -r) m-a prepareUbuntusudo apt install build-essential dkms linux-headers-$(uname -r)Fedorasu...",
+    "content": "VBoxLinuxAdditions.runDebiansudo apt install build-essential module-assistant dkms linux-headers-$(uname -r) m-a prepareUbuntusudo apt install build-essential dkms linux-headers-$(uname -r)Fedorasudo dnf install kernel-headers kernel-devel dkms tar bzip2 kernel-devel-$(uname -r) kernel-headers perl gcc make elfutils-libelf-devel "
+  },
+  
+  {
+    "title": "Chirpy Build Issue",
+    "url": "/posts/chirpy-build-issue/",
+    "categories": "Jekykll, Chirpy",
+    "tags": "jekyll, chirpy, issues",
+    "date": "2023-04-01 13:01:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "When trying to build locally or on github with more than 10 posts, I came across the following issue:  Liquid Exception: no implicit conversion of nil into String in /home/dbqrs/gems/gems/jekyll-th...",
+    "content": "When trying to build locally or on github with more than 10 posts, I came across the following issue:  Liquid Exception: no implicit conversion of nil into String in /home/dbqrs/gems/gems/jekyll-theme-chirpy-5.6.1/_layouts/default.html/home/dbqrs/gems/gems/jekyll-seo-tag-2.8.0/lib/jekyll-seo-tag/drop.rb:70:in `+': no implicit conversion of nil into String (TypeError)        return page_number + @title if page_numberThe problem was in _config.yml on line 22title: #dbqrs.com I do not recall why, but I commented out dbqrs.com and a problem did not arise until I tried building with more than 10 posts.Uncommenting resolved the issue.title: dbqrs.comThanks to NichtsHsu for assisting."
+  },
+  
+  {
+    "title": "Kathy's Mean Green Guacamole",
+    "url": "/posts/reciper-guacamole/",
+    "categories": "Recipes",
+    "tags": "recipe, mexican, dip",
+    "date": "2023-04-01 02:01:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "4 to 6 avocados4 to 6 tbls olive oil  &lt;–secret ingredientsaltpeppergarlic saltlime juicechili powderonion flakestomato choppedyellow pepper choppedoptional - 1 tbls sour cream",
+    "content": "4 to 6 avocados4 to 6 tbls olive oil  &lt;–secret ingredientsaltpeppergarlic saltlime juicechili powderonion flakestomato choppedyellow pepper choppedoptional - 1 tbls sour cream"
+  },
+  
+  {
+    "title": "Spaghetti Recipe",
+    "url": "/posts/recipe-spaghetti/",
+    "categories": "Recipes",
+    "tags": "recipe, spaghetti, italian",
+    "date": "2023-04-01 02:01:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Mom’s SpaghettiIngrediants2 lbs. ground beef1 lb. ground pork1 glove garlic chopped1 large yellow onion diced1 jar sliced green olives (drained) with pimento or about 2 cups1 tablespoon Dried orega...",
+    "content": "Mom’s SpaghettiIngrediants2 lbs. ground beef1 lb. ground pork1 glove garlic chopped1 large yellow onion diced1 jar sliced green olives (drained) with pimento or about 2 cups1 tablespoon Dried oregano or Italian seasoning3 bay leaves¾ cup sugar &lt; - Optional48-ounce can tomato juice36- to 48-ounce of tomato pasteCook meat with the diced onion. Season with salt and pepper. Add a couple tablespoons of flour to soak up all the grease and cook a minute to cook out flour taste.Deglaze the pan with tomato juice, carefully scraping up flour bits off of bottom of pan. Add the rest of the ingredients. Bring to a hard simmer then take heat down to a low simmer and let cook. The longer the better. It should be nice and thick with a savory onion and briny olive taste with a sweet tomato finish.Serve on spaghetti noodles topped with parmesan, and with some cheesy garlic bread."
+  },
+  
+  {
+    "title": "Five Spice Chicken",
+    "url": "/posts/recipe-five-spice-chicken/",
+    "categories": "Recipes",
+    "tags": "recipe, asian, chicken",
+    "date": "2023-04-01 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "For the chicken    1.5 lbs chicken breast (about 2 breasts)    1 tsp Chinese five-spice powder see notes    1/4 tsp sea saltFor the veggies    1 yellow bell pepper any color would work    1 large c...",
+    "content": "For the chicken    1.5 lbs chicken breast (about 2 breasts)    1 tsp Chinese five-spice powder see notes    1/4 tsp sea saltFor the veggies    1 yellow bell pepper any color would work    1 large carrot    1 bunch baby broccoli or half a small broccoli head    4 tsp olive oil divided    2 tsp sesame seedsFor the sauce    3 tbsp soy sauce tamari for GF, coconut aminos for Paleo    2 tbsp rice vinegar    1/4 cup honey    1 tbsp cornstarch or arrowroot    1 garlic clove minced    1 tsp fresh ginger mincedInstructionsPrepare chicken:     Cut the chicken into even-sized small cubes. Cut the chicken breasts in slices, then cut each slices lengthwise into long stripes and then cut crosswise into dice.    Add chicken, five-spice and salt in a bowl. Using a spoon or your hands, combine to coat chicken with spices.Prepare veggies:    Cut bell peppers into strips, then cut these strips in half. Make carrot ribbons using a vegetable peeler and cut broccolini into smaller florets.Prepare sauce:     In a medium bowl, whisk together sauce ingredients.Make stir-fry:    Once everything is ready, heat 2 teaspoons olive oil in a large non-stick skillet over high heat. When oil is hot, add chicken and cook for 3-4 minutes. It’s ok if chicken is still slightly pink because it will finish cooking later. Remove from skillet.     Add another 2 teaspoons of olive oil. Add veggies and stir fry for about 5 minutes. They should still be crispy, so pay attention not to overcook them.    Put chicken back into the skillet and add sauce. Cook for 1 minute, stirring, until sauce thickens and chicken is cooked through.    Serve immediately with jasmine rice and sprinkle with sesame seeds.Recipe Notes:    Five-spice powder can be found in most grocery stores. It’s a mix of star anise, cloves, cinnamon, black pepper and fennel seeds.    If you want to eat this with rice, start heating the cooking water just before prepping the ingredients so that rice and chicken are ready at the same time.    To keep things low-carb/paleo serve your 5-Spice Chicken over cauliflower rice or zoodles.    To make this Whole30-approved, skip the rice vinegar and the honey and add some date paste (blended soaked dates) to the sauce for sweetness. Use coconut aminos instead of soy sauce.Variations:     You can make this recipe with de-boned chicken thighs instead of chicken breast.    Choose whichever veggies YOU want in your chicken stir-fry.  Feel free to toss in some edamame, asparagus, snow peas, baby corn or a bit of shredded cabbage.  Just make sure they’re all sliced or chopped equally in size before you begin cooking.    If you want to add some heat to your chicken stir-fry, add some crushed red pepper flakes."
+  },
+  
+  {
+    "title": "stdout Notes",
+    "url": "/posts/stdout/",
+    "categories": "linux, bash",
+    "tags": "linux, stdout, cmdline, cmd, bash",
+    "date": "2023-04-01 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "redirect the output (AKA stdout) to a file:  SomeCommand &gt; SomeFile.txtOr if you want to append data:SomeCommand » SomeFile.txtIf you want stderr as well use this:SomeCommand &amp;&gt; SomeFile....",
+    "content": "redirect the output (AKA stdout) to a file:  SomeCommand &gt; SomeFile.txtOr if you want to append data:SomeCommand » SomeFile.txtIf you want stderr as well use this:SomeCommand &amp;&gt; SomeFile.txtor this to append:SomeCommand &amp;» SomeFile.txtif you want to have both stderr and output displayed on the console and in a file use this:SomeCommand 2&gt;&amp;1 | tee SomeFile.txtsudo apt upgrade &gt;&amp;1 | tee upgrade_log.log^^(If you want the output only, drop the 2 above)"
+  },
+  
+  {
+    "title": "Hot Beer Mustard Recipe",
+    "url": "/posts/recipe-hotmustard/",
+    "categories": "Recipes",
+    "tags": "recipe, mustard",
+    "date": "2023-04-01 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Hot Beer Mustard 1 part Coleman dry mustard 1 part brown sugarVinegar till moist, like play-dohBeer to liquidify to your desired consistency",
+    "content": "Hot Beer Mustard 1 part Coleman dry mustard 1 part brown sugarVinegar till moist, like play-dohBeer to liquidify to your desired consistency"
+  },
+  
+  {
+    "title": "Chorizo Recipe",
+    "url": "/posts/recipe-chorizo/",
+    "categories": "Recipes",
+    "tags": "recipe, chorizo, mexican",
+    "date": "2023-04-01 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Chorizo taste best when marinaded minimum 24 hrs in the refrigeratorIngredients1 A pound of ground pork1/4 cup guajillo chili powder2 Tbs ancho chili powder (optional)2 Tbs oil (canola)1/4 cup appl...",
+    "content": "Chorizo taste best when marinaded minimum 24 hrs in the refrigeratorIngredients1 A pound of ground pork1/4 cup guajillo chili powder2 Tbs ancho chili powder (optional)2 Tbs oil (canola)1/4 cup apple cider vinegar1 Tbs Mexican oregano1/2 Tbs garlic powder1/2 Tbs onion powder1/2 Tbs ground cumin1 large bay leaf (ground)1/8 tsp clove spice powder1/4 tsp thymeBlack pepper to taste (1/2 tsp)Salt to taste (start with 1 tsp)"
+  },
+  
+  {
+    "title": "Build Kernel 5.3.5 for Debian 10.1",
+    "url": "/posts/kernel-debian/",
+    "categories": "linux, kernel",
+    "tags": "linux, debian, kernel",
+    "date": "2023-04-01 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "These are old notesBuild Kernel 5.3.5 for Debian 10.1apt-get install build-essential libncurses-dev bison flex libssl-dev libelf-dev\tbc\t\t&lt;–installs prerequisiteswget https://cdn.kernel.org/pub/l...",
+    "content": "These are old notesBuild Kernel 5.3.5 for Debian 10.1apt-get install build-essential libncurses-dev bison flex libssl-dev libelf-dev\tbc\t\t&lt;–installs prerequisiteswget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.3.5.tar.xz\t\t&lt;–downloads kernelwget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.3.5.tar.sign\t\t&lt;–downloads kenel signaturegpg –verify linux-5.3.5.tar.sign\t\t&lt;–verifies kernelunxz -v linux-5.3.5.tar.xz\t\t&lt;–uzips .tartar xvf linux-5.3.5.tar\t\t&lt;–unpacks .tarcd linux-5.3.5\t\t&lt;–enter kernel directorycp -v /boot/config-$(uname -r) .config\t\t&lt;– copies current kernel config ex:/boot/config-4.19.0-6-amd64make -j $(nproc)\t\t&lt;–starts compiling a compressed kernelmake modules_install\t\t&lt;–installs the kenel modules"
+  },
+  
+  {
+    "title": "Yaesu FT-891 Cat Control",
+    "url": "/posts/ft891-cat-control/",
+    "categories": "Radio",
+    "tags": "radio, yaesu, ft891, catcontrol",
+    "date": "2023-03-30 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "The cat control on most rigs is a serial connection, typically /dev/ttyAMA0 or /dev/ttyUSB0.Plug in the radio, and run this command.dmesg | grepp ttyIf you put the serial port into flrig/fldigi and...",
+    "content": "The cat control on most rigs is a serial connection, typically /dev/ttyAMA0 or /dev/ttyUSB0.Plug in the radio, and run this command.dmesg | grepp ttyIf you put the serial port into flrig/fldigi and you get permission denied errors, run:sudo usermod -a -G dialout username  FT-891 and TRX-manager CAT control softwareRPI4, SignaLink, FT-891 ~ PTT works but no ALC/Power on Transmit  I had a lot of trouble with the Singnalink USB and the FT-891, but actually getting power out was not one of them. That said, I’ve been using FT8, Winlink and all other digital modes quite successfully with that hardware combination and the following radio settings (I did not need to adjust the Data Gain at all, since the Signalink has knobs on the front to adjust TX and RX gain!):05-06: CAT RATE: 19200 ; 3840005-07: CAT TOT: 1000 msec - kb9vbr05-08: CAT RTS: DISABLE; Disable08-01: DATA MODE: OTHERS; PSK08-02: PSK TONE: 150008-03: OTHER DISP: 150008-04: OTHER SHIFT: 150008-05: DATA LCUT FREQ: 10008-06: LCUT SLOPE: 6db/Oct08-07: DATA HCUT FREQ: 400008-08: DATA HCUT SLOPE: 6db/Oct08-09: DATA IN SELECT: REAR; Rear08-10: DATA PTT SELECT: DAKY; Daky08-11: DATA OUT LEVEL: 5008-12: DATA BFO: USB16-03 HF Power: 40 or lessMenu -&gt; WDH -&gt; 30005-6 Cat Rate: 384005-7 CAT TOT: 1000 msec5-8 CAT RTS: Disable8-1 Data Mode: PSK8-9 Data In Select: Rear8-10 Data PTT Select: DAKY8-11 Data Out Level: 508-12 Data BFO: USB16-03 HF Power: 40The Signalink draws its power from the USB socket on the computer, so if your computer is not giving it enough juice, the powered hub may be necessary.One thing to note, and it’s hidden in the the Signalink USB documentation, is that the PTT mode in the software you’re using should be set to “VOX”. You do not set the radio to VOX, just the software. If you don’t do this, the mic becomes active during transmit and other weird things happen. See this link for the full troubleshooting session. With the above settings, you will be using USB-Data mode. That’s nice, because you don’t have to keep switching between USB and LSB whenever you change modes/bands."
+  },
+  
+  {
+    "title": "Yaesu FT-891 Audio EQ Settings",
+    "url": "/posts/ft891-audio/",
+    "categories": "Radio",
+    "tags": "radio, yaesu, ft891, audio, eq",
+    "date": "2023-03-30 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Have a friend listen to your audio and ask them if you sound distorted or if your audio is too weak.  I have my mic gain set at 30 with the processor set at 20.  I have a strong voice projection so...",
+    "content": "Have a friend listen to your audio and ask them if you sound distorted or if your audio is too weak.  I have my mic gain set at 30 with the processor set at 20.  I have a strong voice projection so 30 is enough.  For others 35 or 40 might be needed for mic gain.  I can’t imagine needing to set the mic gain higher than 50 though.The ALC meter should go to approximately half scale as you speak.  There is a mark halfway and the bar thickness changes to a thin line.  When you speak into your mic, the meter should deflect to the halfway mark, but not too much beyond halfway.  Note that you cannot completely rely on the ALC meter.  The meters are never dead on.  Neither are compression meters.  The meters might get you close, but it is best to verify on air with a friend who knows your voice.FT-891 TX audio settings for hand micMenu #  Setting11-09  100-300015-01  20015-02  1015-03  815-04  130015-05  515-06  815-07  240015-08  715-09  815-10  30015-11  1015-12  815-13  130015-14  515-15  815-16  230015-17  715-18  816-07  3016-08  3016-09  50Function Menu -1…Enable PRC for processor and set to 20Function Menu-2…Enable MEQ"
+  },
+  
+  {
+    "title": "Pi-hole Notes",
+    "url": "/posts/pi-hole/",
+    "categories": "linux, network, dns",
+    "tags": "linux, network, dns, pi-hole",
+    "date": "2023-03-25 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "  Pi-hole is setup as a recursive dns server using unbound - documentation  Installed unattended-updates to automatically install security updates  Installed cockpit for remote management  Using Li...",
+    "content": "  Pi-hole is setup as a recursive dns server using unbound - documentation  Installed unattended-updates to automatically install security updates  Installed cockpit for remote management  Using Linux Mint 21.1 which is an unsupported OS  Updating Pi-hole installation needs to be done with the following commandPIHOLE_SKIP_OS_CHECK=true sudo -E pihole -up  Using additional ad blocking lists from:Blocklist Projectlightswitch05/Developer Dan"
+  },
+  
+  {
+    "title": "Enable BBR Congestion Control",
+    "url": "/posts/enable-bbr/",
+    "categories": "linux, network",
+    "tags": "linux, network, bbr",
+    "date": "2023-03-18 01:00:00 -0500",
+    
+
+
+
+
+
+    
+    "snippet": "Enable TCP BBR in LinuxRequires atleast linux kernel 4.9 or above. This is not an issue on modern linux distros. Everyone is kernel version 5.x.xsudo nano /etc/sysctl.confAdd the following at the e...",
+    "content": "Enable TCP BBR in LinuxRequires atleast linux kernel 4.9 or above. This is not an issue on modern linux distros. Everyone is kernel version 5.x.xsudo nano /etc/sysctl.confAdd the following at the end of the file.## Enable BBR Congestion Controlnet.core.default_qdisc=fqnet.ipv4.tcp_congestion_control=bbr## Enable Window Scalingnet.ipv4.tcp_window_scaling = 1Reload sysctl configsudo sysctl -pOutput should be:net.core.default_qdisc = fqnet.ipv4.tcp_congestion_control = bbrnet.ipv4.tcp_window_scaling = 1"
+  },
+  
+  {
+    "title": "Disable Windows S Mode",
+    "url": "/posts/disable-s-mode/",
+    "categories": "Windows, Registry",
+    "tags": "s mode, windows, registry",
+    "date": "2023-03-11 00:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "Disable Windows S Mode Through Windows RecoveryBoot into recovery mode and load hive atc:\\windows\\system32\\config\\SYSTEM[HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\CI\\Policy]\"SkuPolicyRequired...",
+    "content": "Disable Windows S Mode Through Windows RecoveryBoot into recovery mode and load hive atc:\\windows\\system32\\config\\SYSTEM[HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\CI\\Policy]\"SkuPolicyRequired\"=dword:00000000\"SkuPolicyRequired\"=dword:00000000 &lt;--disabled\"SkuPolicyRequired\"=dword:00000001 &lt;--enabled"
+  },
+  
+  {
+    "title": "Clonezilla mismatched GPT and MBR partition error",
+    "url": "/posts/clonezilla-mismatched-partition/",
+    "categories": "Linux, Data Backup",
+    "tags": "clonezilla, mismatched",
+    "date": "2023-03-11 00:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "Clonezilla mismatched GPT and MBR partition errorgo to  command line and entersudo gdisk /dev/sdaFound valid MBR and GPT. Which do you want to use? 1 – MBR 2 – GPT 3 – Create blank GPTSelect: 1Comm...",
+    "content": "Clonezilla mismatched GPT and MBR partition errorgo to  command line and entersudo gdisk /dev/sdaFound valid MBR and GPT. Which do you want to use? 1 – MBR 2 – GPT 3 – Create blank GPTSelect: 1Command (? for help): xExpert command (? for help): zAbout to wipe out GPT on /dev/sda. Proceed? (Y/N): yGPT data structures destroyed! You may now partition the disk using fdisk or other utilities.Blank out MBR? (Y/N): n"
+  },
+  
+  {
+    "title": "USB to Serial Cable Notes",
+    "url": "/posts/find-serial-port/",
+    "categories": "Linux",
+    "tags": "linux, usb, serial, console",
+    "date": "2023-03-10 00:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "To use USB to serial adapter, add user to dialout groupUbuntu:sudo usermod -aG dialout USERNAMEFedora:sudo usermod -a -G tty USERNAMEFound this in a random note for Ubuntu:sudo chmod a+rw /dev/ttyU...",
+    "content": "To use USB to serial adapter, add user to dialout groupUbuntu:sudo usermod -aG dialout USERNAMEFedora:sudo usermod -a -G tty USERNAMEFound this in a random note for Ubuntu:sudo chmod a+rw /dev/ttyUSB0find serial portsdmesg | grep tty or dmesg | grep ttyUSB$ dmesg | grep ttyUSB[167395.675741] usb 1-6: MCT U232 converter now attached to ttyUSB0Use screen to connect to a sessionscreen /dev/ttyUSB0"
+  },
+  
+  {
+    "title": "Robocopy Usage",
+    "url": "/posts/robocopy/",
+    "categories": "Windows, Commandline",
+    "tags": "cmd, windows, robocopy",
+    "date": "2023-03-01 00:00:00 -0600",
+    
+
+
+
+
+
+    
+    "snippet": "copy all files and permissionsrobocopy source destination /E /ZB /DCOPY:T /COPYALL /R:1 /W:1 /V /TEE /LOG:Robocopy.logrobocopy \"\\\\servername\\sharelocation\" \"\\\\newservername\\newsharelocation\"  /E /Z...",
+    "content": "copy all files and permissionsrobocopy source destination /E /ZB /DCOPY:T /COPYALL /R:1 /W:1 /V /TEE /LOG:Robocopy.logrobocopy \"\\\\servername\\sharelocation\" \"\\\\newservername\\newsharelocation\"  /E /ZB /DCOPY:T /COPYALL /R:1 /W:1 /V /TEE /LOG:c:\\logs\\Robocopy.loghere’s what the switches mean:source :: Source Directory (drive:\\path or \\server\\share\\path).destination :: Destination Dir  (drive:\\path or \\server\\share\\path)./E :: copy subdirectories, including Empty ones./ZB :: use restartable mode; if access denied use Backup mode./DCOPY:T :: COPY Directory Timestamps./COPYALL :: COPY ALL file info (equivalent to /COPY:DATSOU).  Copies the Data, Attributes, Timestamps, Ownser, Permissions and Auditing info/R:n :: number of Retries on failed copies: default is 1 million but I set this to only retry once./W:n :: Wait time between retries: default is 30 seconds but I set this to 1 second./V :: produce Verbose output, showing skipped files./TEE :: output to console window, as well as the log file./LOG:file :: output status to LOG file (overwrite existing log)."
+  },
+  
+  {
+    "title": "Youtube Post Template",
+    "url": "/posts/yt-template/",
+    "categories": "",
+    "tags": "youtube, template",
+    "date": "1776-07-04 00:08:12 -0550",
+    
+
+
+
+
+
+    
+    "snippet": "---author: rstitle: Youtube Post Templatedate: 2023-01-01 01:00:00 -0500 categories: []tags: [youtube,template] ---&lt;iframe width=\"700\" height=\"540\" src=\"https://www.youtube.com/embed/5EL_iW-OBRY...",
+    "content": "---author: rstitle: Youtube Post Templatedate: 2023-01-01 01:00:00 -0500 categories: []tags: [youtube,template] ---&lt;iframe width=\"700\" height=\"540\" src=\"https://www.youtube.com/embed/5EL_iW-OBRY\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; web-share\" allowfullscreen&gt;&lt;/iframe&gt;"
+  }
+  
+]
+

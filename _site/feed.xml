@@ -1,0 +1,247 @@
+
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://localhost:4002/</id>
+  <title>dbqrs.com</title>
+  <subtitle>My Online Notebook</subtitle>
+  <updated>2025-01-13T17:21:05-06:00</updated>
+  <author>
+    <name>dbqrs</name>
+    <uri>http://localhost:4002/</uri>
+  </author>
+  <link rel="self" type="application/atom+xml" href="http://localhost:4002/feed.xml"/>
+  <link rel="alternate" type="text/html" hreflang="en"
+    href="http://localhost:4002/"/>
+  <generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator>
+  <rights> © 2025 dbqrs </rights>
+  <icon>/assets/img/favicons/favicon.ico</icon>
+  <logo>/assets/img/favicons/favicon-96x96.png</logo>
+
+
+  
+  <entry>
+    <title>Export All Exchange Online Distribution Lists To Excel</title>
+    <link href="http://localhost:4002/posts/export-distribution-list/" rel="alternate" type="text/html" title="Export All Exchange Online Distribution Lists To Excel" />
+    <published>2025-01-13T01:00:00-06:00</published>
+  
+    <updated>2025-01-13T01:00:00-06:00</updated>
+  
+    <id>http://localhost:4002/posts/export-distribution-list/</id>
+    <content src="http://localhost:4002/posts/export-distribution-list/" />
+    <author>
+      <name>rs</name>
+    </author>
+
+  
+    
+    <category term="exchange" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      Export All Exchange Online Distribution Lists To Excel
+
+This is based off this post: Exchange Online Quick Tip: Export all distribution lists with members to a CSV file!
+
+This is different because it exports all distribution lists including their members into separate .csv files, then combines all the .csv files into an Excel spreadsheet. Each tab in the spreadsheet is named after the correspon...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Retrieve Uninstall Strings for Installed Software</title>
+    <link href="http://localhost:4002/posts/uninstall-strings/" rel="alternate" type="text/html" title="Retrieve Uninstall Strings for Installed Software" />
+    <published>2025-01-12T01:00:00-06:00</published>
+  
+    <updated>2025-01-12T17:26:13-06:00</updated>
+  
+    <id>http://localhost:4002/posts/uninstall-strings/</id>
+    <content src="http://localhost:4002/posts/uninstall-strings/" />
+    <author>
+      <name>rs</name>
+    </author>
+
+  
+    
+    <category term="automation" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      PowerShell Script to Find Uninstall Strings for Installed Software (Excluding Microsoft Store Apps)
+
+# Define the registry paths
+$paths = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+)
+
+# Create an array to store the results
+$uninsta...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Taco Seasoning Recipes</title>
+    <link href="http://localhost:4002/posts/tacos/" rel="alternate" type="text/html" title="Taco Seasoning Recipes" />
+    <published>2025-01-12T01:00:00-06:00</published>
+  
+    <updated>2025-01-12T01:00:00-06:00</updated>
+  
+    <id>http://localhost:4002/posts/tacos/</id>
+    <content src="http://localhost:4002/posts/tacos/" />
+    <author>
+      <name>rs</name>
+    </author>
+
+  
+    
+    <category term="recipes" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      Here are eight ways to season tacos.
+
+1. Classic Taco Seasoning
+This is a traditional seasoning mix that gives tacos a balanced, savory flavor.
+
+Ingredients:
+
+  1 tablespoon chili powder
+  1 teaspoon cumin
+  1 teaspoon paprika
+  1 teaspoon garlic powder
+  1 teaspoon onion powder
+  ½ teaspoon oregano
+  ¼ teaspoon cayenne pepper (optional for heat)
+  ½ teaspoon salt
+  ¼ teaspoon black pepper
+
+
+In...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Configure DC DNS Forwarders</title>
+    <link href="http://localhost:4002/posts/dns-forwarders/" rel="alternate" type="text/html" title="Configure DC DNS Forwarders" />
+    <published>2025-01-12T01:00:00-06:00</published>
+  
+    <updated>2025-01-12T01:00:00-06:00</updated>
+  
+    <id>http://localhost:4002/posts/dns-forwarders/</id>
+    <content src="http://localhost:4002/posts/dns-forwarders/" />
+    <author>
+      <name>rs</name>
+    </author>
+
+  
+    
+    <category term="domain controller" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      To have your domain controller’s DNS forward internet activity to a custom DNS controller, you’ll want to configure DNS forwarding on the domain controller. Here’s how to do it:
+
+
+  Open the DNS Manager:
+    
+      On the domain controller, open the “Server Manager” and go to “Tools” &amp;gt; “DNS.”
+    
+  
+  Configure Forwarders:
+    
+      In DNS Manager, expand your server and right-click on For...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>How To Fix `skey_protected could not be decrypted` Error</title>
+    <link href="http://localhost:4002/posts/duo-migration/" rel="alternate" type="text/html" title="How To Fix `skey_protected could not be decrypted` Error" />
+    <published>2024-12-10T01:00:00-06:00</published>
+  
+    <updated>2024-12-10T01:00:00-06:00</updated>
+  
+    <id>http://localhost:4002/posts/duo-migration/</id>
+    <content src="http://localhost:4002/posts/duo-migration/" />
+    <author>
+      <name>rs</name>
+    </author>
+
+  
+    
+    <category term="duo" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      [error] The protected value for skey_protected could not be decrypted and therefore cannot be used. This may happen if the secret was encrypted on a different machine and copied to this machine. Please try protecting this value again.
+
+Reference Articles:
+
+  Duo Knowledge Base Article 5921
+  Duo Knowledge Base Article 2340
+
+
+
+
+1. Open an Administrator Command Prompt
+
+2. Stop Duo Authentication ...
+    </summary>
+  
+
+  </entry>
+
+</feed>
+
+
